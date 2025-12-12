@@ -1,13 +1,13 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { GorgeService, Rect, PlayerKey } from 'service/gorge.service';
-import { CommonActionService } from 'service/common-action.service'; // 先頭にこれを追加
+import { CommonActionService } from 'service/common-action.service';
 
 @Component({
   selector: 'app-gorge-board',
   templateUrl: './gorge-board.component.html',
   styleUrls: ['./gorge-board.component.css'],
 })
-export class GorgeBoardComponent {
+export class GorgeBoardComponent implements AfterViewInit {
 
   /** どちら側の峡谷を表示するか（player1 / player2） */
   @Input() player: PlayerKey = 'player1';
@@ -18,11 +18,20 @@ export class GorgeBoardComponent {
   /** 駒の並び順（15 種） */
   names = ['雷', '蛇', '斬', '陣', '一', '二', '三', '四', '轟', '霧', '瞬', '浄', '五', '六', '七'];
 
-  constructor(public gorge: GorgeService) { }
+  /** ★ 自分の峡谷の矩形。getter ではなくプロパティにする */
+  rect: Rect | null = null;
 
-  /** 自分の峡谷の矩形（テンプレートから使用） */
-  get rect(): Rect | null {
-    return this.gorge.getRect(this.player);
+  constructor(
+    public gorge: GorgeService,
+    private cdRef: ChangeDetectorRef,
+  ) { }
+
+  /** ★ View 初期化後、1ティック遅らせて rect を確定させる */
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.rect = this.gorge.getRect(this.player);
+      this.cdRef.detectChanges();
+    });
   }
 
   /** 通常駒の枚数 */
