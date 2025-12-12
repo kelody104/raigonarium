@@ -32,11 +32,34 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
 
-  h2 {
+  .modal-header h2 {
     margin: 0;
   }
+
+/* タイトル行右側のボタン群 */
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+  .header-buttons .primary {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #ffb74d;
+    cursor: pointer;
+  }
+
+  .header-buttons .secondary {
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    cursor: pointer;
+  }
 
 .close-button {
   border: none;
@@ -45,18 +68,17 @@
   cursor: pointer;
 }
 
-/* 本文（ここだけスクロール）
-   ★ overflow-y: scroll にして常にスクロールバーを出す */
+/* 本文（ここだけスクロール） */
 .modal-body {
   flex: 1;
-  overflow-y: scroll;
+  overflow-y: scroll; /* 常にスクロールバーを出す */
 }
 
   .modal-body section + section {
     margin-top: 16px;
   }
 
-/* フッター */
+/* フッター（今は未使用だが将来用に残す） */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -138,10 +160,6 @@
 .hint {
   font-size: 11px;
   color: #666;
-
-  .strong {
-    font-weight: bold;
-  }
 }
 
 /* 奥義検索行 */

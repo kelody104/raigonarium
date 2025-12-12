@@ -43,6 +43,7 @@ import { SpectatorService } from 'service/spectator.service';
 import raijin from 'json/raijin/raijin.json';
 import { Piece } from 'models/piece';
 import { GameConfigService } from 'service/game-config.service';
+import { RaizanSetupService } from 'service/raizan-setup.service';  // ★これを追加
 
 @Component({
   selector: 'app-root',
@@ -74,7 +75,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private commonActionService: CommonActionService,
     private spectatorService: SpectatorService,
     private ngZone: NgZone,
-    private gameConfig: GameConfigService
+    private gameConfig: GameConfigService,
+    private raizanSetupService: RaizanSetupService, // ★追加
   ) {
 
     this.ngZone.runOutsideAngular(() => {
@@ -305,7 +307,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     kotodama: Piece[];
     ougi: Piece[];
   }) {
-    console.log('saved', event);
+    // 奥義の中で1枚以上「使用枚数 > 0」のものがあるかどうかで、
+    // 現在の雷山生成ロジックに渡すフラグを決める
+    const includeOugi = event.ougi.some(p => (p.countInGame ?? 0) > 0);
+
+    // 雷山生成サービスを呼び出す
+    this.raizanSetupService.setupRaizan(includeOugi);
+
+    // モーダルを閉じる
     this.closeRaizanSettings();
   }
 

@@ -5,7 +5,11 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>雷山設定</h2>
-      <button type="button" class="close-button" (click)="onClickClose()">×</button>
+      <div class="header-buttons">
+        <button type="button" class="primary" (click)="onClickSave()">雷山生成</button>
+        <button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>
+        <button type="button" class="close-button" (click)="onClickClose()">×</button>
+      </div>
     </div>
 
     <div class="modal-body">
@@ -70,7 +74,7 @@
             検索：
             <input type="text"
                    [(ngModel)]="ougiSearchTerm"
-                   placeholder="ひらがなで入力（例：は・りん など）" />
+                   placeholder="ひらがなで入力（例：はく・りん など）" />
           </label>
           <span class="ougi-search-count">
             該当 {{ filteredOugiPieces.length }} / {{ ougiPieces.length }} 個
@@ -100,11 +104,6 @@
           </button>
         </div>
       </section>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" (click)="onClickSave()">保存</button>
-      <button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>
     </div>
   </div>
 </div>
