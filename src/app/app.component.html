@@ -1,21 +1,10 @@
 <div id="app-table-layer" style="position: absolute; width: 100%; height: 100%; overflow: hidden;">
   <game-table></game-table>
 </div>
-<ui-panel [top]="0" [left]="0" [width]="100" [height]="470" [title]="'メニュー'" [showTitleButtons]="false">
+<ui-panel [top]="0" [left]="0" [width]="100" [height]="550" [title]="'メニュー'" [showTitleButtons]="false">
   <nav>
     <ul>
-      <li *ngIf="isSpectator" (click)="onClickLeaveSpectator()">
-        <a>
-          <div><i class="far fa-eye"></i></div>
-          <div>観戦中</div>
-        </a>
-      </li>
-      <li *ngIf="!isSpectator" (click)="onClickBecomeSpectator()">
-        <a>
-          <div><i class="far fa-eye-slash"></i></div>
-          <div>観戦する</div>
-        </a>
-      </li>
+
       <li (click)="open('PeerMenuComponent')">
         <a routerLink="/" routerLinkActive="active">
           <div><i class="fas fa-user-plus"></i></div>
@@ -25,12 +14,6 @@
         <a>
           <div><i class="fa-brands fa-battle-net"></i></div>
           <div>ゲーム開始</div>
-        </a>
-      </li>
-      <li (click)="open('ChatWindowComponent')">
-        <a routerLink="/" routerLinkActive="active">
-          <div><i class="fas fa-comments"></i></div>
-          <div>チャット画面</div>
         </a>
       </li>
       <li>
@@ -54,6 +37,18 @@
         <a>
           <div><i class="fas fa-hourglass-start"></i></div>
           <div>時計を操作する</div>
+        </a>
+      </li>
+      <li *ngIf="isSpectator" (click)="onClickLeaveSpectator()">
+        <a>
+          <div><i class="far fa-eye"></i></div>
+          <div>観戦中</div>
+        </a>
+      </li>
+      <li *ngIf="!isSpectator" (click)="onClickBecomeSpectator()">
+        <a>
+          <div><i class="far fa-eye-slash"></i></div>
+          <div>観戦する</div>
         </a>
       </li>
       <li (click)="open('')">
@@ -111,7 +106,7 @@
       <li>
         <a>
           <div><i class="fab fa-twitter"></i></div>
-          <div>結果をツイート</div>
+          <div>ポスト</div>
         </a>
       </li>
       <li>
@@ -129,6 +124,6 @@
                            [otonashiPieces]="otonashiPieces"
                            [kotodamaPieces]="kotodamaPieces"
                            [ougiPieces]="ougiPieces"
-                           (save)="onRaizanSettingsSave($event)"
+                           (save)="onraizanSettingsSave($event)"
                            (close)="closeRaizanSettings()"></app-raizan-settings-modal>
 <network-indicator class="networkIndicator"></network-indicator>

@@ -136,7 +136,7 @@ export class TabletopActionService {
     bgFileContext_back.url = './assets/images/raigo/BG.png';
     testBgFile = ImageStorage.instance.add(bgFileContext);
     testBgFile_back = ImageStorage.instance.add(bgFileContext_back);
-    gameTable.name = '最初のテーブル';
+    gameTable.name = '雷山の里';
     gameTable.imageIdentifier = testBgFile.identifier;
     gameTable.backgroundImageIdentifier = testBgFile_back.identifier;
     gameTable.width = 49;
@@ -150,10 +150,6 @@ export class TabletopActionService {
     if (!ImageStorage.instance.get(back)) {
       ImageStorage.instance.add(back);
     }
-    let card = Card.create('雷', url, back);
-    card.size = 1.8;
-    card.location.x = 100;
-    card.location.y = 100;
 
     TableSelecter.instance.viewTableIdentifier = gameTable.identifier;
   }

@@ -301,20 +301,23 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   closeRaizanSettings() {
     this.showRaizanSettings = false;
   }
-
-  onRaizanSettingsSave(event: {
+  onraizanSettingsSave(event: {
     otonashi: Piece[];
     kotodama: Piece[];
     ougi: Piece[];
   }) {
-    // 奥義の中で1枚以上「使用枚数 > 0」のものがあるかどうかで、
-    // 現在の雷山生成ロジックに渡すフラグを決める
-    const includeOugi = event.ougi.some(p => (p.countInGame ?? 0) > 0);
+    // モーダルから受け取った設定でローカル状態も更新しておく
+    this.otonashiPieces = event.otonashi;
+    this.kotodamaPieces = event.kotodama;
+    this.ougiPieces = event.ougi;
 
-    // 雷山生成サービスを呼び出す
-    this.raizanSetupService.setupRaizan(includeOugi);
+    // ★枚数つきの設定をそのままサービスに渡して雷山生成
+    this.raizanSetupService.setupRaizanFromSettings({
+      otonashi: this.otonashiPieces,
+      kotodama: this.kotodamaPieces,
+      ougi: this.ougiPieces,
+    });
 
-    // モーダルを閉じる
     this.closeRaizanSettings();
   }
 

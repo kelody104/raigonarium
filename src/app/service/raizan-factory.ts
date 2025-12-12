@@ -3,6 +3,8 @@ import otonashiData from 'src/assets/json/koma/otonashi.json';
 import ougiData from 'src/assets/json/koma/ougi.json';
 import gameLayout from 'src/assets/json/game/game.json';
 
+import { Piece } from 'models/piece';
+
 export type RaigonOrigin = 'kotodama' | 'otonashi' | 'ougi';
 
 /** JSON そのものの型（必要な項目だけ定義） */
@@ -52,8 +54,9 @@ export const RAIzanPos: {
 };
 
 /**
- * 言霊 + 音無 (+ 奥義 1 種類) から雷山用デッキを展開する
- * @param includeOugi true のとき奥義を 1 種類だけ混ぜる
+ * ★従来ロジック：JSON の countInGame をそのまま使って雷山デッキを作る
+ *   ・言霊 + 音無 を全部入れる
+ *   ・奥義はランダムで 1 種類だけ混ぜる
  */
 export function buildRaizanDeck(includeOugi: boolean): RaigonCardDef[] {
   const deck: RaigonCardDef[] = [];
@@ -86,7 +89,7 @@ export function buildRaizanDeck(includeOugi: boolean): RaigonCardDef[] {
   pushCards(kotodamaList, 'kotodama');
   pushCards(otonashiList, 'otonashi');
 
-  // 奥義を 1 種類だけ混ぜる
+  // 奥義を 1 種類だけ混ぜる（従来仕様）
   if (includeOugi) {
     const enabledOugi = ougiList.filter(c => c.enabled !== false);
     if (enabledOugi.length > 0) {
@@ -112,7 +115,83 @@ export function buildRaizanDeck(includeOugi: boolean): RaigonCardDef[] {
   return deck;
 }
 
-/** Fisher–Yates でシャッフル */
+/**
+ * ★新ロジック：モーダルで指定した Piece 配列の countInGame で雷山デッキを作る
+ *  - JSON（SourceCard）から重さやテキストなどの情報を取りつつ、
+ *    枚数だけ Piece.countInGame で上書きする
+ */
+export function buildRaizanDeckFromSettings(
+  otonashiPieces: Piece[],
+  kotodamaPieces: Piece[],
+  ougiPieces: Piece[],
+): RaigonCardDef[] {
+  const deck: RaigonCardDef[] = [];
+
+  const kotodamaList = kotodamaData as SourceCard[];
+  const otonashiList = otonashiData as SourceCard[];
+  const ougiList = ougiData as SourceCard[];
+
+  const toMap = (pieces: Piece[]) => {
+    const m = new Map<number, Piece>();
+    for (const p of pieces) {
+      m.set(p.id, p);
+    }
+    return m;
+  };
+
+  const otonashiMap = toMap(otonashiPieces);
+  const kotodamaMap = toMap(kotodamaPieces);
+  const ougiMap = toMap(ougiPieces);
+
+  const pushFromSourceWithPieces = (
+    source: SourceCard[],
+    pieceMap: Map<number, Piece>,
+    origin: RaigonOrigin,
+  ) => {
+    for (const card of source) {
+      const piece = pieceMap.get(card.id);
+
+      // enabled 判定
+      if (piece) {
+        if (piece.enabled === false) continue;
+      } else {
+        if (card.enabled === false) continue;
+      }
+
+      // 枚数は Piece 側を優先（なければ JSON 側 / それもなければ 0）
+      let count = 0;
+      if (piece) {
+        count = (piece.countInGame ?? 0) | 0;
+      } else {
+        count = (card.countInGame ?? 0) | 0;
+      }
+
+      if (count <= 0) continue;
+
+      for (let i = 0; i < count; i++) {
+        deck.push({
+          id: card.id,
+          data: card.data,
+          name: card.name,
+          yomi: card.yomi,
+          weight: card.weight,
+          effect: card.effect,
+          text: card.text,
+          origin,
+        });
+      }
+    }
+  };
+
+  // モーダルの設定どおりに枚数を決める
+  pushFromSourceWithPieces(kotodamaList, kotodamaMap, 'kotodama');
+  pushFromSourceWithPieces(otonashiList, otonashiMap, 'otonashi');
+  pushFromSourceWithPieces(ougiList, ougiMap, 'ougi');
+
+  return deck;
+}
+
+/** Fisher–Yates でシャッフル（今は未使用だが一応残しておく） */
 export function shuffleDeck<T>(array: T[]): T[] {
   const result = array.slice();
   for (let i = result.length - 1; i > 0; i--) {
