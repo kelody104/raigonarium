@@ -1,0 +1,420 @@
+import { AfterViewInit, Component, NgZone, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+
+import { ChatTabList } from '@udonarium/chat-tab-list';
+import { AudioPlayer } from '@udonarium/core/file-storage/audio-player';
+import { AudioSharingSystem } from '@udonarium/core/file-storage/audio-sharing-system';
+import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
+import { FileArchiver } from '@udonarium/core/file-storage/file-archiver';
+import { ImageFile, ImageContext } from '@udonarium/core/file-storage/image-file';
+import { ImageSharingSystem } from '@udonarium/core/file-storage/image-sharing-system';
+import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
+import { ObjectFactory } from '@udonarium/core/synchronize-object/object-factory';
+import { ObjectSerializer } from '@udonarium/core/synchronize-object/object-serializer';
+import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
+import { ObjectSynchronizer } from '@udonarium/core/synchronize-object/object-synchronizer';
+import { EventSystem, Network } from '@udonarium/core/system';
+import { DataSummarySetting } from '@udonarium/data-summary-setting';
+import { DiceBot } from '@udonarium/dice-bot';
+import { Jukebox } from '@udonarium/Jukebox';
+import { PeerCursor } from '@udonarium/peer-cursor';
+import { PresetSound, SoundEffect } from '@udonarium/sound-effect';
+import { TableSelecter } from '@udonarium/table-selecter';
+
+import { ChatWindowComponent } from 'component/chat-window/chat-window.component';
+import { ContextMenuComponent } from 'component/context-menu/context-menu.component';
+import { FileStorageComponent } from 'component/file-storage/file-storage.component';
+import { GameCharacterSheetComponent } from 'component/game-character-sheet/game-character-sheet.component';
+import { GameObjectInventoryComponent } from 'component/game-object-inventory/game-object-inventory.component';
+import { GameTableSettingComponent } from 'component/game-table-setting/game-table-setting.component';
+import { JukeboxComponent } from 'component/jukebox/jukebox.component';
+import { ModalComponent } from 'component/modal/modal.component';
+import { PeerMenuComponent } from 'component/peer-menu/peer-menu.component';
+import { TextViewComponent } from 'component/text-view/text-view.component';
+import { UIPanelComponent } from 'component/ui-panel/ui-panel.component';
+import { AppConfig, AppConfigService } from 'service/app-config.service';
+import { ChatMessageService } from 'service/chat-message.service';
+import { ContextMenuService } from 'service/context-menu.service';
+import { ModalService } from 'service/modal.service';
+import { PanelOption, PanelService } from 'service/panel.service';
+import { PointerDeviceService } from 'service/pointer-device.service';
+import { SaveDataService } from 'service/save-data.service';
+import { CommonActionService } from 'service/common-action.service';
+import { SpectatorService } from 'service/spectator.service';
+import raijin from 'json/raijin/raijin.json';
+import { Piece } from 'models/piece';
+import { GameConfigService } from 'service/game-config.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements AfterViewInit, OnDestroy {
+
+  @ViewChild('modalLayer', { read: ViewContainerRef, static: true }) modalLayerViewContainerRef: ViewContainerRef;
+  private immediateUpdateTimer: NodeJS.Timeout = null;
+  private lazyUpdateTimer: NodeJS.Timeout = null;
+  private openPanelCount: number = 0;
+  isSaveing: boolean = false;
+  progresPercent: number = 0;
+  // フィールド
+  showRaizanSettings = false;
+
+  otonashiPieces: Piece[] = [];
+  kotodamaPieces: Piece[] = [];
+  ougiPieces: Piece[] = [];
+
+  constructor(
+    private modalService: ModalService,
+    private panelService: PanelService,
+    private pointerDeviceService: PointerDeviceService,
+    private chatMessageService: ChatMessageService,
+    private appConfigService: AppConfigService,
+    private saveDataService: SaveDataService,
+    private commonActionService: CommonActionService,
+    private spectatorService: SpectatorService,
+    private ngZone: NgZone,
+    private gameConfig: GameConfigService
+  ) {
+
+    this.ngZone.runOutsideAngular(() => {
+      EventSystem;
+      Network;
+      FileArchiver.instance.initialize();
+      ImageSharingSystem.instance.initialize();
+      ImageStorage.instance;
+      AudioSharingSystem.instance.initialize();
+      AudioStorage.instance;
+      ObjectFactory.instance;
+      ObjectSerializer.instance;
+      ObjectStore.instance;
+      ObjectSynchronizer.instance.initialize();
+    });
+    this.appConfigService.initialize();
+    this.pointerDeviceService.initialize();
+
+    TableSelecter.instance.initialize();
+    ChatTabList.instance.initialize();
+    DataSummarySetting.instance.initialize();
+
+    let diceBot: DiceBot = new DiceBot('DiceBot');
+    diceBot.initialize();
+    DiceBot.getHelpMessage('').then(() => this.lazyNgZoneUpdate(true));
+
+    let jukebox: Jukebox = new Jukebox('Jukebox');
+    jukebox.initialize();
+
+    let soundEffect: SoundEffect = new SoundEffect('SoundEffect');
+    soundEffect.initialize();
+
+    ChatTabList.instance.addChatTab('メインタブ', 'MainTab');
+    ChatTabList.instance.addChatTab('ルームタブ', 'room-log');
+    ChatTabList.instance.addChatTab('対戦ログ', 'game-log');
+
+    let fileContexts: ImageContext[] = new Array(14);
+    let IconImages: ImageFile[] = new Array(14)
+    for (let i = 1; i <= 13; i++) {
+      fileContexts[i] = ImageFile.createEmpty('icon[' + i + ']').toContext();
+      fileContexts[i].url = './assets/images/raigo/Icons/Icon[' + i + '].png';
+      IconImages[i] = ImageStorage.instance.add(fileContexts[i]);
+    }
+
+    //let fileContext = ImageFile.createEmpty('Icon').toContext();
+    //fileContext.url = './assets/images/raigo/Icons/Icon[' + randomvalue + '].png';
+    //let IconImage = ImageStorage.instance.add(fileContext);    
+
+    AudioPlayer.resumeAudioContext();
+    PresetSound.dicePick = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/shoulder-touch1.mp3').identifier;
+    PresetSound.dicePut = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/book-stack1.mp3').identifier;
+    PresetSound.diceRoll1 = AudioStorage.instance.add('./assets/sounds/on-jin/spo_ge_saikoro_teburu01.mp3').identifier;
+    PresetSound.diceRoll2 = AudioStorage.instance.add('./assets/sounds/on-jin/spo_ge_saikoro_teburu02.mp3').identifier;
+    PresetSound.cardDraw = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/card-turn-over1.mp3').identifier;
+    PresetSound.cardPick = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/shoulder-touch1.mp3').identifier;
+    PresetSound.cardPut = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/book-stack1.mp3').identifier;
+    PresetSound.cardShuffle = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/card-open1.mp3').identifier;
+    PresetSound.piecePick = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/shoulder-touch1.mp3').identifier;
+    PresetSound.piecePut = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/book-stack1.mp3').identifier;
+    PresetSound.blockPick = AudioStorage.instance.add('./assets/sounds/tm2/tm2_pon002.wav').identifier;
+    PresetSound.blockPut = AudioStorage.instance.add('./assets/sounds/tm2/tm2_pon002.wav').identifier;
+    PresetSound.lock = AudioStorage.instance.add('./assets/sounds/tm2/tm2_switch001.wav').identifier;
+    PresetSound.unlock = AudioStorage.instance.add('./assets/sounds/tm2/tm2_switch001.wav').identifier;
+    PresetSound.sweep = AudioStorage.instance.add('./assets/sounds/tm2/tm2_swing003.wav').identifier;
+    PresetSound.selectionStart = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/decision50.mp3').identifier;
+
+    AudioStorage.instance.get(PresetSound.dicePick).isHidden = true;
+    AudioStorage.instance.get(PresetSound.dicePut).isHidden = true;
+    AudioStorage.instance.get(PresetSound.diceRoll1).isHidden = true;
+    AudioStorage.instance.get(PresetSound.diceRoll2).isHidden = true;
+    AudioStorage.instance.get(PresetSound.cardDraw).isHidden = true;
+    AudioStorage.instance.get(PresetSound.cardPick).isHidden = true;
+    AudioStorage.instance.get(PresetSound.cardPut).isHidden = true;
+    AudioStorage.instance.get(PresetSound.cardShuffle).isHidden = true;
+    AudioStorage.instance.get(PresetSound.piecePick).isHidden = true;
+    AudioStorage.instance.get(PresetSound.piecePut).isHidden = true;
+    AudioStorage.instance.get(PresetSound.blockPick).isHidden = true;
+    AudioStorage.instance.get(PresetSound.blockPut).isHidden = true;
+    AudioStorage.instance.get(PresetSound.lock).isHidden = true;
+    AudioStorage.instance.get(PresetSound.unlock).isHidden = true;
+    AudioStorage.instance.get(PresetSound.sweep).isHidden = true;
+    AudioStorage.instance.get(PresetSound.selectionStart).isHidden = true;
+
+    let randomvalue = this.commonActionService.getRandomvalue(1, 13);
+    let familyCode = this.commonActionService.getFamilyCode(randomvalue);
+
+    PeerCursor.createMyCursor();
+    PeerCursor.myCursor.name = 'プレイヤー';
+    PeerCursor.myCursor.imageIdentifier = IconImages[randomvalue].identifier;
+
+    EventSystem.register(this)
+      .on('UPDATE_GAME_OBJECT', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })
+      .on('DELETE_GAME_OBJECT', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })
+      .on('UPDATE_SELECTION', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })
+      .on('SYNCHRONIZE_AUDIO_LIST', event => { if (event.isSendFromSelf) this.lazyNgZoneUpdate(false); })
+      .on('SYNCHRONIZE_FILE_LIST', event => { if (event.isSendFromSelf) this.lazyNgZoneUpdate(false); })
+      .on<AppConfig>('LOAD_CONFIG', event => {
+        console.log('LOAD_CONFIG !!!');
+        Network.configure(event.data);
+        Network.open();
+      })
+      .on<File>('FILE_LOADED', event => {
+        this.lazyNgZoneUpdate(false);
+      })
+      .on('OPEN_NETWORK', event => {
+        console.log('OPEN_NETWORK', event.data.peerId);
+        PeerCursor.myCursor.peerId = Network.peer.peerId;
+        PeerCursor.myCursor.userId = Network.peer.userId;
+      })
+      .on('NETWORK_ERROR', event => {
+        console.log('NETWORK_ERROR', event.data.peerId);
+        let errorType: string = event.data.errorType;
+        let errorMessage: string = event.data.errorMessage;
+
+        this.ngZone.run(async () => {
+          //SKyWayエラーハンドリング
+          let quietErrorTypes = ['peer-unavailable'];
+          let reconnectErrorTypes = ['disconnected', 'socket-error', 'unavailable-id', 'authentication', 'server-error'];
+
+          if (quietErrorTypes.includes(errorType)) return;
+          await this.modalService.open(TextViewComponent, { title: 'ネットワークエラー', text: errorMessage });
+
+          if (!reconnectErrorTypes.includes(errorType)) return;
+          await this.modalService.open(TextViewComponent, { title: 'ネットワークエラー', text: 'このウィンドウを閉じると再接続を試みます。' });
+          Network.open();
+        });
+      })
+      .on('CONNECT_PEER', event => {
+        if (event.isSendFromSelf) this.chatMessageService.calibrateTimeOffset();
+        this.lazyNgZoneUpdate(event.isSendFromSelf);
+      })
+      .on('DISCONNECT_PEER', event => {
+        this.lazyNgZoneUpdate(event.isSendFromSelf);
+      });
+
+    workaroundForMobileSafari();
+  }
+
+  ngAfterViewInit() {
+    PanelService.defaultParentViewContainerRef = ModalService.defaultParentViewContainerRef = ContextMenuService.defaultParentViewContainerRef = this.modalLayerViewContainerRef;
+    setTimeout(() => {
+     // this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
+     // this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
+    }, 0);
+  }
+
+  get isSpectator(): boolean {
+    return this.spectatorService.enabled;
+  }
+  get unreadChatCount(): number {
+    // ChatMessageService の chatTabs 経由で全チャットタブにアクセス
+    const tabs = this.chatMessageService.chatTabs || [];
+    return tabs.reduce((sum, tab: any) => {
+      // ChatTab.unreadLength を合計（公式 udonarium と同じプロパティ名）
+      return sum + (tab.unreadLength || 0);
+    }, 0);
+  }
+
+  onToggleSpectator(event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.spectatorService.enabled = checked;
+    EventSystem.trigger('RAIGO_SPECTATOR_CHANGED', { enabled: checked });
+  }
+
+  // 観戦開始ボタン（ボタンB）を押したとき
+  onClickBecomeSpectator(): void {
+    const ok = window.confirm('本当によろしいですか？\n観戦者になると全ての駒の表が見えるようになります。');
+    if (!ok) return;
+
+    this.spectatorService.enabled = true;
+    EventSystem.trigger('RAIGO_SPECTATOR_CHANGED', { enabled: true });
+
+    this.postSpectatorLog();
+  }
+
+  // 観戦解除ボタン（ボタンA）を押したとき
+  onClickLeaveSpectator(): void {
+    this.spectatorService.enabled = false;
+    EventSystem.trigger('RAIGO_SPECTATOR_CHANGED', { enabled: false });
+  }
+
+  // 観戦者になったことを対戦ログに出す
+  private postSpectatorLog(): void {
+    const tabList = ChatTabList.instance;
+    if (!tabList || !tabList.chatTabs.length) return;
+
+    const roomlog =
+      tabList.chatTabs.find(t => t.name === 'ルームタブ') ??
+      tabList.chatTabs[0];
+
+    if (!roomlog) return;
+
+    const cursor = PeerCursor.myCursor;
+    const name = cursor?.name || 'プレイヤー';
+    const from = cursor?.identifier ?? '';
+
+    const text = `${name} が観戦者になりました`;
+
+    this.chatMessageService.sendMessage(
+      roomlog,
+      text,
+      'system',   // gameType / sendFrom は既存実装に合わせてOK
+      from,
+      null
+    );
+  }
+
+  // 起動時に JSON を読む
+  ngOnInit(): void {
+    this.gameConfig.loadAllPieces().subscribe(({ otonashi, kotodama, ougi }) => {
+      this.otonashiPieces = otonashi;
+      this.kotodamaPieces = kotodama;
+      this.ougiPieces = ougi;
+    });
+  }
+
+  // メニューから開閉
+  openRaizanSettings() {
+    this.showRaizanSettings = true;
+  }
+
+  closeRaizanSettings() {
+    this.showRaizanSettings = false;
+  }
+
+  onRaizanSettingsSave(event: {
+    otonashi: Piece[];
+    kotodama: Piece[];
+    ougi: Piece[];
+  }) {
+    console.log('saved', event);
+    this.closeRaizanSettings();
+  }
+
+  ngOnDestroy() {
+    EventSystem.unregister(this);
+  }
+
+  open(componentName: string) {
+    let component: { new(...args: any[]): any } = null;
+    let option: PanelOption = { width: 450, height: 600, left: 100 }
+    switch (componentName) {
+      case 'PeerMenuComponent':
+        component = PeerMenuComponent;
+        break;
+      case 'ChatWindowComponent':
+        component = ChatWindowComponent;
+        option.width = 700;
+        break;
+      case 'GameTableSettingComponent':
+        component = GameTableSettingComponent;
+        option = { width: 630, height: 400, left: 100 };
+        break;
+      case 'FileStorageComponent':
+        component = FileStorageComponent;
+        break;
+      case 'GameCharacterSheetComponent':
+        component = GameCharacterSheetComponent;
+        break;
+      case 'JukeboxComponent':
+        component = JukeboxComponent;
+        break;
+      case 'GameObjectInventoryComponent':
+        component = GameObjectInventoryComponent;
+        break;
+    }
+    if (component) {
+      option.top = (this.openPanelCount % 10 + 1) * 20;
+      option.left = 100 + (this.openPanelCount % 20 + 1) * 5;
+      this.openPanelCount = this.openPanelCount + 1;
+      this.panelService.open(component, option);
+    }
+  }
+
+  async save() {
+    if (this.isSaveing) return;
+    this.isSaveing = true;
+    this.progresPercent = 0;
+
+    let roomName = 0 < Network.peer.roomName.length
+      ? Network.peer.roomName
+      : 'ルームデータ';
+    await this.saveDataService.saveRoomAsync(roomName, percent => {
+      this.progresPercent = percent;
+    });
+
+    setTimeout(() => {
+      this.isSaveing = false;
+      this.progresPercent = 0;
+    }, 500);
+  }
+
+  handleFileSelect(event: Event) {
+    let input = <HTMLInputElement>event.target;
+    let files = input.files;
+    if (files.length) FileArchiver.instance.load(files);
+    input.value = '';
+  }
+
+  private lazyNgZoneUpdate(isImmediate: boolean) {
+    if (isImmediate) {
+      if (this.immediateUpdateTimer !== null) return;
+      this.immediateUpdateTimer = setTimeout(() => {
+        this.immediateUpdateTimer = null;
+        if (this.lazyUpdateTimer != null) {
+          clearTimeout(this.lazyUpdateTimer);
+          this.lazyUpdateTimer = null;
+        }
+        this.ngZone.run(() => { });
+      }, 0);
+    } else {
+      if (this.lazyUpdateTimer !== null) return;
+      this.lazyUpdateTimer = setTimeout(() => {
+        this.lazyUpdateTimer = null;
+        if (this.immediateUpdateTimer != null) {
+          clearTimeout(this.immediateUpdateTimer);
+          this.immediateUpdateTimer = null;
+        }
+        this.ngZone.run(() => { });
+      }, 100);
+    }
+  }
+}
+
+PanelService.UIPanelComponentClass = UIPanelComponent;
+ContextMenuService.ContextMenuComponentClass = ContextMenuComponent;
+ModalService.ModalComponentClass = ModalComponent;
+
+function workaroundForMobileSafari() {
+  // Mobile Safari (iOS 16.4)で確認した問題のworkaround.
+  // chrome-smooth-image-trickがCSSアニメーション（keyframes）の挙動に悪影響を与えるので修正用CSSで上書きする.
+  let ua = window.navigator.userAgent.toLowerCase();
+  let isiOS = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1 || ua.indexOf('macintosh') > -1 && 'ontouchend' in document;
+  if (isiOS) {
+    let style = document.createElement('style');
+    style.innerHTML = `
+      .chrome-smooth-image-trick {
+        transform-style: flat;
+      }
+      `;
+    document.body.appendChild(style);
+  }
+}

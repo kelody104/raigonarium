@@ -1,0 +1,69 @@
+/* raizan-settings-modal.component.scss */
+.modal {
+  padding: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body section + section {
+  margin-top: 16px;
+}
+
+.piece-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
+}
+
+.piece-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+}
+
+.piece-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* ougi 用ボタン */
+.ougi-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* 奥義の赤枠（countInGame === 1 の時） */
+.ougi-selected {
+  border: 2px solid red;
+}
+
+/* 下のラベル系 */
+.piece-name {
+  margin-top: 4px;
+  text-align: center;
+}
+
+.piece-count {
+  margin-top: 4px;
+  font-size: 11px;
+
+  select {
+    margin-left: 4px;
+  }
+}
+
+.hint {
+  font-size: 11px;
+  color: #666;
+}

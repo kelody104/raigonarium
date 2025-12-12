@@ -1,0 +1,129 @@
+[
+  {
+    "id": 0,
+    "name": "",
+    "birth": "",
+    "family": "",
+    "Ougi1": "",
+    "Ougi2": "",
+    "Ougi3": ""
+  },
+  {
+    "id": 1,
+    "name": "初代雷神　空晴 太樹",
+    "birth": "卯月",
+    "family": "kuze",
+    "Ougi1": "覇",
+    "Ougi2": "天",
+    "Ougi3": "啓"
+  },
+  {
+    "id": 2,
+    "name": "二代目雷神　空晴 天音　",
+    "birth": "葉月",
+    "family": "kuze",
+    "Ougi1": "和",
+    "Ougi2": "禅",
+    "Ougi3": "楼"
+  },
+  {
+    "id": 3,
+    "name": "三代目雷神　飛雪 美琴",
+    "birth": "如月",
+    "family": "hisetsu",
+    "Ougi1": "龍",
+    "Ougi2": "琥",
+    "Ougi3": "舞"
+  },
+  {
+    "id": 4,
+    "name": "四代目雷神　時雨 影助",
+    "birth": "弥生",
+    "family": "shigure",
+    "Ougi1": "忍",
+    "Ougi2": "零",
+    "Ougi3": "怒"
+  },
+  {
+    "id": 5,
+    "name": "五代目雷神　飛雪 琳太郎",
+    "birth": "霜月",
+    "family": "hisetsu",
+    "Ougi1": "崩",
+    "Ougi2": "月",
+    "Ougi3": "嵐"
+  },
+  {
+    "id": 6,
+    "name": "六代目雷神　空晴 十梁",
+    "birth": "睦月",
+    "family": "kuze",
+    "Ougi1": "蒼",
+    "Ougi2": "美",
+    "Ougi3": "麗"
+  },
+  {
+    "id": 7,
+    "name": "七代目雷神　時雨 清十郎",
+    "birth": "皐月",
+    "family": "shigure",
+    "Ougi1": "幻",
+    "Ougi2": "鳴",
+    "Ougi3": "赫"
+  },
+  {
+    "id": 8,
+    "name": "八代目雷神　雷蔵 千歳",
+    "birth": "水無月",
+    "family": "rakura",
+    "Ougi1": "潤",
+    "Ougi2": "樹",
+    "Ougi3": "麟"
+  },
+  {
+    "id": 9,
+    "name": "九代目雷神　八雲 雹",
+    "birth": "師走",
+    "family": "yakumo",
+    "Ougi1": "鬼",
+    "Ougi2": "縛",
+    "Ougi3": "影"
+  },
+  {
+    "id": 10,
+    "name": "十代目雷神　八雲 茶々",
+    "birth": "神無月",
+    "family": "yakumo",
+    "Ougi1": "鳳",
+    "Ougi2": "焔",
+    "Ougi3": "姫"
+  },
+  {
+    "id": 11,
+    "name": "十一代目雷神　飛雪 爽伍",
+    "birth": "文月",
+    "family": "hisetsu",
+    "Ougi1": "涼",
+    "Ougi2": "風",
+    "Ougi3": "凛"
+  },
+  {
+    "id": 12,
+    "name": "十二代目　雷蔵 黒光",
+    "birth": "長月",
+    "family": "rakura",
+    "Ougi1": "滅",
+    "Ougi2": "封",
+    "Ougi3": "神"
+  },
+  {
+    "id": 13,
+    "name": "二代目天魔　帳 神無羅",
+    "birth": "",
+    "family": "tobari",
+    "Ougi1": "逆",
+    "Ougi2": "狼",
+    "Ougi3": "魂"
+  }
+
+]

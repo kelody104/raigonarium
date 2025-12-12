@@ -1,0 +1,30 @@
+# Node / Angular 共通
+node_modules/
+dist/
+tmp/
+temp/
+logs/
+*.log
+
+# Angular ビルド関連
+.angular/
+out-tsc/
+coverage/
+
+# Visual Studio 関連
+.vs/
+*.user
+*.suo
+
+# IDE 関連
+.vscode/
+.idea/
+*.swp
+
+# OS ごみ
+.DS_Store
+Thumbs.db
+
+# 環境ごとの差分が出やすいもの
+.env
+.env.*

@@ -1,0 +1,109 @@
+<div class="gorge-root"
+     [class.gorge-root-p2]="player === 'player2'"
+     [ngStyle]="rect ? {
+    left:   rect.x + 'px',
+    top:    rect.y + 'px',
+    width:  rect.width + 'px',
+    height: rect.height + 'px'
+  } : null">
+
+  <!-- 峡谷ボード本体（常に表示） -->
+  <div class="gorge-board">
+
+    <!-- 1段目: 雷 蛇 斬 陣 -->
+    <div class="gorge-row">
+      <div class="gorge-cell"
+           *ngFor="let name of names.slice(0, 4)"
+           (dblclick)="onPieceDblClick(name)">
+
+        <div class="gorge-piece"
+             [ngClass]="{ 'gorge-piece-empty': getCount(name) === 0 }">
+          <img class="gorge-piece-img"
+               [src]="'assets/images/raigo/koma/' + name + '.jpg'"
+               [alt]="name">
+        </div>
+        <div class="gorge-count">
+          <span class="gorge-count-circle">{{ getCount(name) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2段目: 一 二 三 四 -->
+    <div class="gorge-row">
+      <div class="gorge-cell"
+           *ngFor="let name of names.slice(4, 8)"
+           (dblclick)="onPieceDblClick(name)">
+        <div class="gorge-piece"
+             [ngClass]="{ 'gorge-piece-empty': getCount(name) === 0 }">
+          <img class="gorge-piece-img"
+               [src]="'assets/images/raigo/koma/' + name + '.jpg'"
+               [alt]="name">
+        </div>
+        <div class="gorge-count">
+          <span class="gorge-count-circle">{{ getCount(name) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3段目: 轟 霧 瞬 浄 -->
+    <div class="gorge-row">
+      <div class="gorge-cell"
+           *ngFor="let name of names.slice(8, 12)"
+           (dblclick)="onPieceDblClick(name)">
+        <div class="gorge-piece"
+             [ngClass]="{ 'gorge-piece-empty': getCount(name) === 0 }">
+          <img class="gorge-piece-img"
+               [src]="'assets/images/raigo/koma/' + name + '.jpg'"
+               [alt]="name">
+        </div>
+        <div class="gorge-count">
+          <span class="gorge-count-circle">{{ getCount(name) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4段目: 五 六 七 ＋ 奥義 -->
+    <div class="gorge-row">
+      <!-- 五 六 七 -->
+      <div class="gorge-cell"
+           *ngFor="let name of names.slice(12, 15)"
+           (dblclick)="onPieceDblClick(name)">
+        <div class="gorge-piece"
+             [ngClass]="{ 'gorge-piece-empty': getCount(name) === 0 }">
+          <img class="gorge-piece-img"
+               [src]="'assets/images/raigo/koma/' + name + '.jpg'"
+               [alt]="name">
+        </div>
+        <div class="gorge-count">
+          <span class="gorge-count-circle">{{ getCount(name) }}</span>
+        </div>
+      </div>
+
+      <!-- 右端の奥義マス -->
+      <div class="gorge-cell gorge-cell-ougi"
+           (dblclick)="onOugiDblClick()">
+
+        <!-- 奥義があればその画像、なければ空 -->
+        <div class="gorge-piece" *ngIf="ougiName; else ougiEmpty">
+          <img class="gorge-piece-img"
+               [src]="'assets/images/raigo/koma/' + ougiName + '.jpg'"
+               [alt]="ougiName">
+        </div>
+        <ng-template #ougiEmpty>
+          <div class="gorge-piece gorge-piece-empty"></div>
+        </ng-template>
+
+        <div class="gorge-count">
+          <span class="gorge-count-circle">{{ ougiCount }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- マスク（hover$ で表示制御） -->
+  <div class="gorge-mask"
+       [class.is-visible]="(hover$ | async) && rect">
+    <span class="gorge-mask-label"[class.gorge-mask-label-rotated]="isPlayer2View">峡谷に置く</span>
+  </div>
+
+</div>

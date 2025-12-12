@@ -1,0 +1,152 @@
+/* 峡谷ボードのルート。game-table 内で絶対配置する */
+.gorge-root {
+  position: absolute;
+  pointer-events: auto;
+  z-index: 120;
+}
+
+.gorge-mask {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  right: 6px;
+  bottom: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  font-size: 22px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+/* player2 側だけマスクの枠位置を変更したい場合 */
+.gorge-root-p2 .gorge-mask {
+  top: -6px; /* 上下を入れ替える例。数字は好みで調整してOK */
+  bottom: 6px;
+  /* 必要なら left/right もここで変更 */
+}
+
+.gorge-mask-label {
+  color: #fff;
+  font-weight: bold;
+  font-size: 36px;
+  text-shadow: 0 0 4px #000;
+}
+
+/* ボード本体（枠＋駒＋カウント） */
+.gorge-board {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* 行ごとに4マス並べる */
+.gorge-row {
+  display: flex;
+  flex: 1;
+}
+
+/* 各マス */
+.gorge-cell {
+  flex: 1;
+  margin: 1px; /* ← 2px から少しだけ細く */
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background: rgba(255, 228, 150, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* ← center → space-between に変更 */
+  padding: 0px 0; /* ← 上下だけ薄くパディング */
+  box-sizing: border-box;
+}
+
+/* 奥義用マスは少しトーンを変えておく */
+.gorge-cell-ougi {
+  background: rgba(255, 255, 255, 0.2);
+  border-style: dashed;
+}
+
+/* 駒アイコン */
+.gorge-piece {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gorge-piece-img {
+  max-width: 90%;
+  max-height: 90%;
+  display: block;
+}
+
+/* ★ カウント0の駒 & 奥義空スロット：色の濃さ30% */
+.gorge-piece-empty {
+  opacity: 0.5;
+}
+
+/* 個数表示 */
+.gorge-count {
+  margin-top: -12px; /* ← 4px → 0 に */
+  font-size: 15px;
+  color: #000;
+  padding-bottom: 0px; /* 念のため下パディングも無しに */
+}
+
+/* カウンター（黒丸＋白数字） */
+.gorge-count {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 20px;
+}
+
+.gorge-count-circle {
+  min-width: 12px;
+  height: 12px;
+  padding: 6px;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 24px;
+  line-height: 12px;
+  text-align: center;
+}
+
+/* 奥義用マスは少し見た目を変える */
+.gorge-cell-ougi {
+  background: rgba(255, 255, 255, 0.15);
+  border-style: dashed;
+}
+
+.gorge-mask {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+  .gorge-mask.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+/* ★ player2 側の峡谷（ボード＋マスク）を丸ごと180度回転させる */
+.gorge-root-p2 .gorge-board{
+  transform: rotate(180deg);
+  transform-origin: center center;
+}
+
+.gorge-mask-label-rotated {
+  transform: rotate(180deg);
+}

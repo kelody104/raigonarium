@@ -1,0 +1,49 @@
+{
+  "room": [
+    {
+      "name": "雷の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934021866354528276/bxz1qWg1lBlNCH7U_qvdBZLbY2HbpANpvtGw7UmgtiTO_RsDr3NPqrPtFT-AFUvgz9sg",
+      "peerId": "01"
+    },
+    {
+      "name": "蛇の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022038086119434/ylgaxgDrmFAhDn7vtbWkQkNS5Un7NwH0yg2kkFtNoIQXRcoe8j82qwqDWLuS7MSEe8Nb",
+      "peerId": "02"
+    },
+    {
+      "name": "斬の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022159494414366/zosSOd9VOqhgah06yMYXnqIId80oNDE88xkwBHR-FXJG-qNLlbkA1z_1W1mGJWYx5wj_",
+      "peerId": "03"
+    },
+    {
+      "name": "陣の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022288339243008/v9owzP9LElsv7cz2ydPUbA5AD7FuESnVSG3hvmVLLSp_uAuoZppkTGh1muMFClqPVNcM",
+      "peerId": "04"
+    },
+    {
+      "name": "轟の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022423936921600/1ipX3jJP_y4swbS_94vL2VezQ32l0hN74uoiEnI97qMMFZLpX9ifPVfeFdqvuK5_BKa_",
+      "peerId": "05"
+    },
+    {
+      "name": "霧の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022561535234098/WIaszO61OzepiyldNBj_C8oOZLIJq5fbW2djqk0X2YCjFG2M23r8SboJyaKbqJgVc7io",
+      "peerId": "06"
+    },
+    {
+      "name": "瞬の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022678434697256/nfgebEvC-Opv0Mn0ZA7H44G_Cd-EE2INKiZawMKcWBSe-bjpnXhgUDlonFvZRydmj3NI",
+      "peerId": "07"
+    },
+    {
+      "name": "浄の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022788405166091/TnEfDK_uzQOgFWbtUqSVy8X-Z_ce336YNc1vjZ67VMPwv7S2l8Fce0jDujGJJmY4iiXp",
+      "peerId": "08"
+    },
+    {
+      "name": "滅の間",
+      "discordwebhook": "https://discordapp.com/api/webhooks/934022912359399424/0StOpbSZJEzxXRz0FlrTd4ZQiMAneyqRTBQlYDEBi1XsopR6kTePKPkwWdgcQjjZQ-v",
+      "peerId": "09"
+    }
+  ]
+}

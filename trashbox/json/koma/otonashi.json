@@ -1,0 +1,130 @@
+[
+  {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+    {
+    "id": 2,
+    "data": "NI"
+    "name": "二",
+    "kind": "otonashi",
+    "weight": 2,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "SAN"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 3,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  },
+      {
+    "id": 1,
+    "data": "ICHI"
+    "name": "一",
+    "kind": "otonashi",
+    "weight": 1,
+    "countInGame": 4,
+    "effect": "",
+    "enabled": true,
+    "specialstr1":null,
+    "specialstr2":null,
+    "specialnum1":null,
+    "specialnum2":null,
+    "specialboo1":null,
+    "specialboo2":null
+  }
+]

@@ -1,0 +1,101 @@
+<!-- raizan-settings-modal.component.html -->
+<div class="modal">
+  <div class="modal-header">
+    <h2>雷山設定</h2>
+    <!-- ×ボタンなどはお好みで -->
+  </div>
+
+  <div class="modal-body">
+    <!-- otonashi & kotodama 設定 -->
+    <section>
+      <h3>音無 & 言霊</h3>
+
+      <div class="piece-grid">
+        <!-- otonashi -->
+        <div
+          class="piece-item"
+          *ngFor="let piece of otonashiPieces"
+        >
+          <img
+            [src]="piece.imagePath"
+            [alt]="piece.name"
+            class="piece-img"
+          />
+
+          <div class="piece-name">{{ piece.name }}</div>
+
+          <label class="piece-count">
+            使用数
+            <select
+              [ngModel]="piece.countInGame"
+              (ngModelChange)="onChangeCount(piece, $event)"
+            >
+              <option *ngFor="let n of countOptions" [ngValue]="n">
+                {{ n }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <!-- kotodama（通常） -->
+        <div
+          class="piece-item"
+          *ngFor="let piece of kotodamaPieces"
+        >
+          <img
+            [src]="piece.imagePath"
+            [alt]="piece.name"
+            class="piece-img"
+          />
+
+          <div class="piece-name">{{ piece.name }}</div>
+
+          <label class="piece-count">
+            使用数
+            <select
+              [ngModel]="piece.countInGame"
+              (ngModelChange)="onChangeCount(piece, $event)"
+            >
+              <option *ngFor="let n of countOptions" [ngValue]="n">
+                {{ n }}
+              </option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <hr />
+
+    <!-- ougi 設定 -->
+    <section>
+      <h3>奥義</h3>
+      <p class="hint">
+        ※赤枠：この奥義を雷山に入れる（countInGame = 1）
+      </p>
+
+      <div class="piece-grid">
+        <button
+          type="button"
+          class="piece-item ougi-button"
+          *ngFor="let piece of ougiPieces"
+          (click)="toggleOugi(piece)"
+        >
+          <img
+            [src]="piece.imagePath"
+            [alt]="piece.name"
+            class="piece-img"
+            [class.ougi-selected]="piece.countInGame === 1"
+          />
+          <div class="piece-name">
+            {{ piece.name }}
+          </div>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" (click)="onClickSave()">保存</button>
+  </div>
+</div>
