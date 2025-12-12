@@ -1,101 +1,110 @@
-<!-- raizan-settings-modal.component.html -->
-<div class="modal">
-  <div class="modal-header">
-    <h2>雷山設定</h2>
-    <!-- ×ボタンなどはお好みで -->
-  </div>
+<!-- src/app/component/raizan-settings-modal/raizan-settings-modal.component.html -->
+<!-- 画面全体を覆う半透明の背景 -->
+<div class="raizan-backdrop" (click)="onClickBackdrop()">
+  <!-- モーダル本体。クリックを背景に伝播させない -->
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>雷山設定</h2>
+      <button type="button" class="close-button" (click)="onClickClose()">×</button>
+    </div>
 
-  <div class="modal-body">
-    <!-- otonashi & kotodama 設定 -->
-    <section>
-      <h3>音無 & 言霊</h3>
+    <div class="modal-body">
+      <!-- otonashi & kotodama 設定 -->
+      <section>
+        <h3>音無 & 言霊</h3>
 
-      <div class="piece-grid">
-        <!-- otonashi -->
-        <div
-          class="piece-item"
-          *ngFor="let piece of otonashiPieces"
-        >
-          <img
-            [src]="piece.imagePath"
-            [alt]="piece.name"
-            class="piece-img"
-          />
+        <!-- 音無：一〜八（ここで1行分） -->
+        <div class="piece-grid">
+          <div class="piece-item" *ngFor="let piece of otonashiPieces">
+            <img [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
+                 [alt]="piece.name"
+                 class="piece-img"
+                 [class.disabled]="piece.countInGame === 0" />
 
-          <div class="piece-name">{{ piece.name }}</div>
+            <!--<div class="piece-name">{{ piece.name }}</div>-->
 
-          <label class="piece-count">
-            使用数
-            <select
-              [ngModel]="piece.countInGame"
-              (ngModelChange)="onChangeCount(piece, $event)"
-            >
-              <option *ngFor="let n of countOptions" [ngValue]="n">
-                {{ n }}
-              </option>
-            </select>
-          </label>
-        </div>
-
-        <!-- kotodama（通常） -->
-        <div
-          class="piece-item"
-          *ngFor="let piece of kotodamaPieces"
-        >
-          <img
-            [src]="piece.imagePath"
-            [alt]="piece.name"
-            class="piece-img"
-          />
-
-          <div class="piece-name">{{ piece.name }}</div>
-
-          <label class="piece-count">
-            使用数
-            <select
-              [ngModel]="piece.countInGame"
-              (ngModelChange)="onChangeCount(piece, $event)"
-            >
-              <option *ngFor="let n of countOptions" [ngValue]="n">
-                {{ n }}
-              </option>
-            </select>
-          </label>
-        </div>
-      </div>
-    </section>
-
-    <hr />
-
-    <!-- ougi 設定 -->
-    <section>
-      <h3>奥義</h3>
-      <p class="hint">
-        ※赤枠：この奥義を雷山に入れる（countInGame = 1）
-      </p>
-
-      <div class="piece-grid">
-        <button
-          type="button"
-          class="piece-item ougi-button"
-          *ngFor="let piece of ougiPieces"
-          (click)="toggleOugi(piece)"
-        >
-          <img
-            [src]="piece.imagePath"
-            [alt]="piece.name"
-            class="piece-img"
-            [class.ougi-selected]="piece.countInGame === 1"
-          />
-          <div class="piece-name">
-            {{ piece.name }}
+            <label class="piece-count">
+              使用数
+              <select [ngModel]="piece.countInGame"
+                      (ngModelChange)="onChangeCount(piece, $event)">
+                <option *ngFor="let n of countOptions" [ngValue]="n">
+                  {{ n }}
+                </option>
+              </select>
+            </label>
           </div>
-        </button>
-      </div>
-    </section>
-  </div>
+        </div>
 
-  <div class="modal-footer">
-    <button type="button" (click)="onClickSave()">保存</button>
+        <!-- 言霊：雷〜（八の次の行に並べる） -->
+        <div class="piece-grid">
+          <div class="piece-item" *ngFor="let piece of kotodamaPieces">
+            <img [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
+                 [alt]="piece.name"
+                 class="piece-img"
+                 [class.disabled]="piece.countInGame === 0" />
+
+            <!--<div class="piece-name">{{ piece.name }}</div>-->
+
+            <label class="piece-count">
+              使用数
+              <select [ngModel]="piece.countInGame"
+                      (ngModelChange)="onChangeCount(piece, $event)">
+                <option *ngFor="let n of countOptions" [ngValue]="n">
+                  {{ n }}
+                </option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <hr />
+
+      <!-- ougi 設定 -->
+      <section>
+        <h3>奥義</h3>
+
+        <!-- 検索ボックス -->
+        <div class="ougi-search-row">
+          <label>
+            検索：
+            <input type="text"
+                   [(ngModel)]="ougiSearchTerm"
+                   placeholder="ひらがなで入力（例：は・りん など）" />
+          </label>
+          <span class="ougi-search-count">
+            該当 {{ filteredOugiPieces.length }} / {{ ougiPieces.length }} 個
+          </span>
+        </div>
+
+        <p class="hint">
+          <!--※グレーの駒：この奥義を雷山に<span class="strong">入れない</span><br />
+          ※カラーの駒：雷山に<span class="strong">入れる</span><br />
+          ※画像をクリックすると 0 ↔ 1 で切り替わります。<br />
+          ※検索は <code>yomi</code>（ひらがな読み）に部分一致します。-->
+        </p>
+
+        <!-- 奥義：1 行 9 個ずつ並べる（検索結果に応じてフィルタ） -->
+        <div class="piece-grid-ougi">
+          <button type="button"
+                  class="piece-item ougi-button"
+                  *ngFor="let piece of filteredOugiPieces"
+                  (click)="toggleOugi(piece)">
+            <img [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
+                 [alt]="piece.name"
+                 class="piece-img"
+                 [class.disabled]="piece.countInGame === 0" />
+            <!--<div class="piece-name">
+              {{ piece.name }}
+            </div>-->
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" (click)="onClickSave()">保存</button>
+      <button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>
+    </div>
   </div>
 </div>

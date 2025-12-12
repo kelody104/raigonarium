@@ -1,23 +1,93 @@
-/* raizan-settings-modal.component.scss */
-.modal {
-  padding: 16px;
-  max-height: 90vh;
-  overflow-y: auto;
+/* src/app/component/raizan-settings-modal/raizan-settings-modal.component.scss */
+
+/* 画面全体を覆う背景 */
+.raizan-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* モーダル本体（高さを固定） */
+.modal {
+  background: #fefefe;
+  border-radius: 8px;
+  padding: 16px;
+  width: 90%;
+  max-width: 960px;
+  /* 高さを固定して、常に同じサイズにする */
+  height: 80vh;
+  max-height: 80vh;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+  }
 }
 
-.modal-body section + section {
-  margin-top: 16px;
+.close-button {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
 }
 
+/* 本文（ここだけスクロール）
+   ★ overflow-y: scroll にして常にスクロールバーを出す */
+.modal-body {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+  .modal-body section + section {
+    margin-top: 16px;
+  }
+
+/* フッター */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+
+  button {
+    padding: 4px 12px;
+  }
+
+  .secondary {
+    background: #eee;
+  }
+}
+
+/* 駒グリッド共通 */
 .piece-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
+}
+
+  /* 音無行の下に少し余白を入れる */
+  .piece-grid + .piece-grid {
+    margin-top: 12px;
+  }
+
+/* 奥義用：1 行 9 個 */
+.piece-grid-ougi {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(64px, 1fr));
   gap: 12px;
 }
 
@@ -28,6 +98,7 @@
   font-size: 12px;
 }
 
+/* 駒画像 */
 .piece-img {
   width: 64px;
   height: 64px;
@@ -35,7 +106,13 @@
   border-radius: 4px;
 }
 
-/* ougi 用ボタン */
+  /* countInGame = 0 の駒をグレー表示 */
+  .piece-img.disabled {
+    filter: grayscale(100%);
+    opacity: 0.4;
+  }
+
+/* 奥義ボタン */
 .ougi-button {
   background: transparent;
   border: none;
@@ -43,12 +120,7 @@
   cursor: pointer;
 }
 
-/* 奥義の赤枠（countInGame === 1 の時） */
-.ougi-selected {
-  border: 2px solid red;
-}
-
-/* 下のラベル系 */
+/* テキスト類 */
 .piece-name {
   margin-top: 4px;
   text-align: center;
@@ -64,6 +136,28 @@
 }
 
 .hint {
+  font-size: 11px;
+  color: #666;
+
+  .strong {
+    font-weight: bold;
+  }
+}
+
+/* 奥義検索行 */
+.ougi-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  input[type='text'] {
+    padding: 2px 6px;
+    min-width: 220px;
+  }
+}
+
+.ougi-search-count {
   font-size: 11px;
   color: #666;
 }
