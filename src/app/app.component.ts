@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { AudioPlayer } from '@udonarium/core/file-storage/audio-player';
@@ -19,6 +19,7 @@ import { Jukebox } from '@udonarium/Jukebox';
 import { PeerCursor } from '@udonarium/peer-cursor';
 import { PresetSound, SoundEffect } from '@udonarium/sound-effect';
 import { TableSelecter } from '@udonarium/table-selecter';
+import { Terrain } from '@udonarium/terrain';
 
 import { ChatWindowComponent } from 'component/chat-window/chat-window.component';
 import { ContextMenuComponent } from 'component/context-menu/context-menu.component';
@@ -37,6 +38,7 @@ import { ContextMenuService } from 'service/context-menu.service';
 import { ModalService } from 'service/modal.service';
 import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
+import { TabletopService } from 'service/tabletop.service';
 import { SaveDataService } from 'service/save-data.service';
 import { CommonActionService } from 'service/common-action.service';
 import { SpectatorService } from 'service/spectator.service';
@@ -50,7 +52,7 @@ import { RaizanSetupService } from 'service/raizan-setup.service';  // ★これ
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements AfterViewInit, OnDestroy {
+export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
 
   @ViewChild('modalLayer', { read: ViewContainerRef, static: true }) modalLayerViewContainerRef: ViewContainerRef;
   private immediateUpdateTimer: NodeJS.Timeout = null;
@@ -70,6 +72,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private panelService: PanelService,
     private pointerDeviceService: PointerDeviceService,
     private chatMessageService: ChatMessageService,
+    private tabletopService: TabletopService,
     private appConfigService: AppConfigService,
     private saveDataService: SaveDataService,
     private commonActionService: CommonActionService,
@@ -121,10 +124,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       IconImages[i] = ImageStorage.instance.add(fileContexts[i]);
     }
 
-    //let fileContext = ImageFile.createEmpty('Icon').toContext();
-    //fileContext.url = './assets/images/raigo/Icons/Icon[' + randomvalue + '].png';
-    //let IconImage = ImageStorage.instance.add(fileContext);    
-
     AudioPlayer.resumeAudioContext();
     PresetSound.dicePick = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/shoulder-touch1.mp3').identifier;
     PresetSound.dicePut = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/book-stack1.mp3').identifier;
@@ -142,6 +141,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     PresetSound.unlock = AudioStorage.instance.add('./assets/sounds/tm2/tm2_switch001.wav').identifier;
     PresetSound.sweep = AudioStorage.instance.add('./assets/sounds/tm2/tm2_swing003.wav').identifier;
     PresetSound.selectionStart = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/decision50.mp3').identifier;
+    PresetSound.raigo = AudioStorage.instance.add('./assets/sounds/tm2/tm2_don19.wav').identifier;
+    PresetSound.raijin = AudioStorage.instance.add('./assets/sounds/tm2/tm2_don09_a.wav').identifier;
+    PresetSound.makimono = AudioStorage.instance.add('./assets/sounds/tm2/巻物開く音.mp3').identifier;
+    PresetSound.raihou = AudioStorage.instance.add('./assets/sounds/tm2/塔解放時落雷.mp3').identifier;
+    PresetSound.charge = AudioStorage.instance.add('./assets/sounds/tm2/陽玉蓄積音.mp3').identifier;
+    PresetSound.on = AudioStorage.instance.add('./assets/sounds/tm2/隠駒.mp3').identifier;
+    PresetSound.godeye = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/和太鼓でカカッ.mp3').identifier;
+    PresetSound.chat = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/キャンセル4.mp3').identifier;
+    PresetSound.enter = AudioStorage.instance.add('./assets/sounds/soundeffect-lab/鈴を鳴らす.mp3').identifier;
+    PresetSound.bgm1 = AudioStorage.instance.add('./assets/sounds/dova/陰影.mp3').identifier;
+    PresetSound.bgm2 = AudioStorage.instance.add('./assets/sounds/amca/「夜半ノ月」～夜道.mp3').identifier;
+    PresetSound.bgm3 = AudioStorage.instance.add('./assets/sounds/amca/お地蔵様のいる小道.mp3').identifier;
+    PresetSound.bgm4 = AudioStorage.instance.add('./assets/sounds/amca/ネオンパープル.mp3').identifier;
+    PresetSound.bgm5 = AudioStorage.instance.add('./assets/sounds/amca/ミスト.mp3').identifier;
+    //PresetSound.bgm6 = AudioStorage.instance.add('./assets/sounds/amca/傾きかけた日差し.mp3').identifier;
+    PresetSound.bgm7 = AudioStorage.instance.add('./assets/sounds/amca/孤独とささやき.mp3').identifier;
+    PresetSound.bgm8 = AudioStorage.instance.add('./assets/sounds/amca/悠久の時へ.mp3').identifier;
+    PresetSound.bgm9 = AudioStorage.instance.add('./assets/sounds/amca/桜雲.mp3').identifier;
+    PresetSound.bgm10 = AudioStorage.instance.add('./assets/sounds/amca/神々の宿る場所.mp3').identifier;
+    PresetSound.bgm11 = AudioStorage.instance.add('./assets/sounds/amca/緩やかな風.mp3').identifier;
 
     AudioStorage.instance.get(PresetSound.dicePick).isHidden = true;
     AudioStorage.instance.get(PresetSound.dicePut).isHidden = true;
@@ -159,6 +178,26 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     AudioStorage.instance.get(PresetSound.unlock).isHidden = true;
     AudioStorage.instance.get(PresetSound.sweep).isHidden = true;
     AudioStorage.instance.get(PresetSound.selectionStart).isHidden = true;
+    AudioStorage.instance.get(PresetSound.raigo).isHidden = true;
+    AudioStorage.instance.get(PresetSound.raijin).isHidden = true;
+    AudioStorage.instance.get(PresetSound.makimono).isHidden = true;
+    AudioStorage.instance.get(PresetSound.raihou).isHidden = true;
+    AudioStorage.instance.get(PresetSound.charge).isHidden = true;
+    AudioStorage.instance.get(PresetSound.on).isHidden = true;
+    AudioStorage.instance.get(PresetSound.godeye).isHidden = true;
+    AudioStorage.instance.get(PresetSound.chat).isHidden = true;
+    AudioStorage.instance.get(PresetSound.enter).isHidden = true;
+    AudioStorage.instance.get(PresetSound.bgm1).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm2).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm3).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm4).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm5).isHidden = false;
+    //AudioStorage.instance.get(PresetSound.bgm6).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm7).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm8).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm9).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm10).isHidden = false;
+    AudioStorage.instance.get(PresetSound.bgm11).isHidden = false;
 
     let randomvalue = this.commonActionService.getRandomvalue(1, 13);
     let familyCode = this.commonActionService.getFamilyCode(randomvalue);
@@ -218,8 +257,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     PanelService.defaultParentViewContainerRef = ModalService.defaultParentViewContainerRef = ContextMenuService.defaultParentViewContainerRef = this.modalLayerViewContainerRef;
     setTimeout(() => {
-     // this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
-     // this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
+      // this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
+      // this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
     }, 0);
   }
 
@@ -319,6 +358,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
 
     this.closeRaizanSettings();
+  }
+
+  onPlaceOugiToTsuki(event: { ougiPieces: Piece[] }): void {
+    if (!event || !event.ougiPieces || event.ougiPieces.length === 0) {
+      return;
+    }
+
+    // 雷神戦モードの「月に置く」イベントをサービスへ委譲
+    this.raizanSetupService.placeOugiToTsuki(event.ougiPieces);
+  }
+
+  // 隠駒terrainへ状態を寄せられる場合は寄せる（未実装でも壊れないようにanyで）
+  private getOngomaTerrain(): Terrain | null {
+    const terrains = this.tabletopService?.terrains ?? [];
+    return terrains.find(t => (t.name ?? '').includes('隠駒') || (t.name ?? '').toLowerCase().includes('ongoma')) ?? null;
   }
 
   ngOnDestroy() {

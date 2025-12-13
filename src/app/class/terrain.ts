@@ -16,6 +16,73 @@ export class Terrain extends TabletopObject {
   @SyncVar() mode: TerrainViewState = TerrainViewState.ALL;
   @SyncVar() rotate: number = 0;
 
+  // === Chess Clock ===
+  @SyncVar() clockEnabled: boolean = false;
+  @SyncVar() clockInitMs: number = 25 * 60 * 1000;
+  @SyncVar() clockP1Ms: number = 25 * 60 * 1000;
+  @SyncVar() clockP2Ms: number = 25 * 60 * 1000;
+  @SyncVar() clockRunning: boolean = false;
+  @SyncVar() clockActive: 'P1' | 'P2' | null = null;
+  // 「動いてる間の経過」を計算する基準（操作した人の Date.now() を保存）
+  @SyncVar() clockStampMs: number = 0;
+
+  private clockNow(): number { return Date.now(); }
+
+
+  private clockCommit(now = this.clockNow()) {
+    if (!this.clockRunning || !this.clockActive || !this.clockStampMs) {
+      this.clockStampMs = now;
+      return;
+    }
+    const dt = Math.max(0, now - this.clockStampMs);
+    this.clockStampMs = now;
+
+    if (this.clockActive === 'P1') this.clockP1Ms = Math.max(0, this.clockP1Ms - dt);
+    else this.clockP2Ms = Math.max(0, this.clockP2Ms - dt);
+
+    // 0になったら停止
+    if (this.clockP1Ms === 0 || this.clockP2Ms === 0) this.clockRunning = false;
+  }
+
+  getClockRemaining(player: 'P1' | 'P2'): number {
+    if (!this.clockRunning || this.clockActive !== player) return player === 'P1' ? this.clockP1Ms : this.clockP2Ms;
+    const now = this.clockNow();
+    const dt = Math.max(0, now - (this.clockStampMs || now));
+    const base = player === 'P1' ? this.clockP1Ms : this.clockP2Ms;
+    return Math.max(0, base - dt);
+  }
+
+  clockReset() {
+    this.clockEnabled = true;
+    this.clockP1Ms = this.clockInitMs;
+    this.clockP2Ms = this.clockInitMs;
+    this.clockRunning = false;
+    this.clockActive = null;
+    this.clockStampMs = 0;
+  }
+
+  clockStart(active: 'P1' | 'P2' = 'P1') {
+    this.clockEnabled = true;
+    this.clockActive = this.clockActive ?? active;
+    this.clockRunning = true;
+    this.clockStampMs = this.clockNow();
+  }
+
+  clockPause() {
+    this.clockCommit();
+    this.clockRunning = false;
+  }
+
+  clockSwitch() {
+    if (!this.clockEnabled) this.clockReset();
+    if (!this.clockRunning) this.clockStart(this.clockActive ?? 'P1');
+
+    this.clockCommit();
+    this.clockActive = this.clockActive === 'P1' ? 'P2' : 'P1';
+    this.clockStampMs = this.clockNow();
+  }
+
+
   get width(): number { return this.getCommonValue('width', 1); }
   set width(width: number) { this.setCommonValue('width', width); }
   get height(): number { return this.getCommonValue('height', 1); }

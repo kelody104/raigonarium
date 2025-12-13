@@ -24,6 +24,26 @@ export class PresetSound {
   static unlock: string = '';
   static sweep: string = '';
   static selectionStart: string = '';
+  static raigo: string = '';
+  static raijin: string = '';
+  static makimono: string = '';
+  static raihou: string = '';
+  static charge: string = '';
+  static on: string = '';
+  static godeye: string = '';
+  static chat: string = '';
+  static enter: string = '';
+  static bgm1: string = '';
+  static bgm2: string = '';
+  static bgm3: string = '';
+  static bgm4: string = '';
+  static bgm5: string = '';
+  static bgm6: string = '';
+  static bgm7: string = '';
+  static bgm8: string = '';
+  static bgm9: string = '';
+  static bgm10: string = '';
+  static bgm11: string = '';
 }
 
 @SyncObject('sound-effect')

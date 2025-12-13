@@ -15,6 +15,10 @@ import {
   RAIzanPos,
 } from './raizan-factory';
 
+import gameLayout from 'src/assets/json/game/game.json';
+import { PlayerKey } from 'service/gorge.service';
+import { CommonActionService } from 'service/common-action.service';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -44,9 +48,98 @@ export class RaizanSetupService {
    * ★従来の雷山生成
    *   - JSON デフォルトの countInGame とランダム奥義 1 種
    */
-  setupRaizan(includeOugi: boolean): { raizanStack: CardStack; raizanTop: Card | null } {
+  setupRaizan(includeOugi: boolean): {
+    raizanStack: CardStack;
+    raizanTop: Card | null;
+  } {
     const deckDefs: RaigonCardDef[] = buildRaizanDeck(includeOugi);
     return this.buildRaizanFromDeckDefs(deckDefs);
+  }
+
+  /**
+   * ★雷神戦モード用「月に置く」
+   *   - countInGame === 1 の奥義駒を、現在プレイヤーの tsuki 座標に
+   *     1つの CardStack として配置し、その山にカードを乗せる
+   */
+  placeOugiToTsuki(ougiPieces: Piece[]): void {
+    if (!ougiPieces || ougiPieces.length === 0) return;
+
+    // 念のためここでも countInGame === 1 だけに絞る
+    const targetPieces = ougiPieces.filter(p => {
+      const c = Number((p as any).countInGame ?? 0);
+      return c === 1;
+    });
+    if (targetPieces.length === 0) return;
+
+    const player = this.getCurrentPlayer();
+    const tsukiPos = this.getTsukiPosition(player);
+
+    if (!tsukiPos) {
+      console.warn('tsuki 座標が game.json に見つかりません:', player);
+      return;
+    }
+
+    const backUrl = './assets/images/raigo/koma/ura.jpg';
+    if (!ImageStorage.instance.get(backUrl)) {
+      ImageStorage.instance.add(backUrl);
+    }
+
+    // ★ 月用の山札（CardStack）を作成
+    const tsukiStack = CardStack.create('月');
+    tsukiStack.location.x = tsukiPos.x;
+    tsukiStack.location.y = tsukiPos.y;
+    tsukiStack.isLocked = true;
+
+    // ★ player2 側のときだけ 180 度回転
+    if (player === 'player2') {
+      tsukiStack.rotate = 180;
+    }
+
+    ObjectStore.instance.add(tsukiStack);
+
+    // ★ countInGame === 1 の奥義だけカードを作って積む
+    for (const piece of targetPieces) {
+      const name = (piece as any).name as string;
+      if (!name) continue;
+
+      const frontUrl = `./assets/images/raigo/koma/${name}.jpg`;
+
+      if (!ImageStorage.instance.get(frontUrl)) {
+        ImageStorage.instance.add(frontUrl);
+      }
+
+      const card = Card.create(name, frontUrl, backUrl, 1.8);
+
+      (card as any).raigonId = (piece as any).id;
+
+      card.state = CardState.FRONT;
+      tsukiStack.putOnTop(card);
+    }
+
+    tsukiStack.unifyCardsSize(1.8);
+    tsukiStack.uprightAll();
+  }
+
+  /** 現在のプレイヤーを取得（なければ player1 扱い） */
+  private getCurrentPlayer(): PlayerKey {
+    const common = CommonActionService.instance;
+    if (!common) {
+      return 'player1';
+    }
+    return common.getCurrentPlayer() as PlayerKey;
+  }
+
+  /** game.json から tsuki 座標を取得 */
+  private getTsukiPosition(player: PlayerKey): { x: number; y: number } | null {
+    const layout: any = gameLayout as any;
+    const playerLayout = layout && layout[player];
+
+    if (!playerLayout || !playerLayout.tsuki) {
+      return null;
+    }
+
+    const tsuki = playerLayout.tsuki;
+    return { x: tsuki.x, y: tsuki.y };
   }
 
   /**
@@ -67,23 +160,18 @@ export class RaizanSetupService {
 
     // ② deckDefs からカードを作成して山に積む
     for (const def of deckDefs) {
-      // 例：「一」 → ./assets/images/raigo/koma/一.jpg
       const frontUrl = `./assets/images/raigo/koma/${def.name}.jpg`;
 
-      // 画像を ImageStorage に登録（なければ追加）
       if (!ImageStorage.instance.get(frontUrl)) {
         ImageStorage.instance.add(frontUrl);
       }
 
-      // front/back に URL をそのまま渡す
       const card = Card.create(def.name, frontUrl, backUrl, 1.8);
 
-      // 追加情報（必要なら）
       (card as any).raigonKind = def.origin;
       (card as any).weight = def.weight;
       (card as any).raigonId = def.id;
 
-      // 裏向きにして山の一番上へ
       card.state = CardState.BACK;
       raizanStack.putOnTop(card);
     }

@@ -2,6 +2,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Piece } from 'models/piece';
 
+type BattleMode = '雷轟戦モード' | '雷神戦モード';
+
 @Component({
   selector: 'app-raizan-settings-modal',
   templateUrl: './raizan-settings-modal.component.html',
@@ -21,45 +23,69 @@ export class RaizanSettingsModalComponent implements OnInit {
 
   @Output() close = new EventEmitter<void>();
 
-  // 0〜8
-  countOptions: number[] = Array.from({ length: 9 }, (_, i) => i);
+  /**
+   * 雷神戦モードで「月に置く」を押したときに飛ばすイベント。
+   * 実際に Card を作って tsuki に配置する処理は
+   * 親コンポーネントやサービス側で実装してもらう想定。
+   */
+  @Output() placeToTsuki = new EventEmitter<{ ougiPieces: Piece[] }>();
 
-  // 奥義検索（ひらがな）
+  /** カウント選択用 (0〜8枚) */
+  readonly countOptions: number[] = Array.from({ length: 9 }, (_, i) => i);
+
+  /** 奥義検索用（読み） */
   ougiSearchTerm = '';
 
+  /** 対戦モード */
+  readonly battleModes: BattleMode[] = ['雷轟戦モード', '雷神戦モード'];
+  selectedBattleMode: BattleMode = '雷神戦モード';
+
   ngOnInit(): void {
-    // 親の配列を汚さないようにコピーしつつ enabled=false を除外
-    this.otonashiPieces = this.filterEnabled(
-      this.otonashiPieces.map(p => ({ ...p }))
-    );
-    this.kotodamaPieces = this.filterEnabled(
-      this.kotodamaPieces.map(p => ({ ...p }))
-    );
-    this.ougiPieces = this.filterEnabled(
-      this.ougiPieces.map(p => ({ ...p }))
-    );
+    // もとの配列を破壊しないようにクローンしつつ、enabled=false は除外
+    this.otonashiPieces = this.cloneAndFilter(this.otonashiPieces);
+    this.kotodamaPieces = this.cloneAndFilter(this.kotodamaPieces);
+    this.ougiPieces = this.cloneAndFilter(this.ougiPieces);
   }
 
-  /** enabled が false の駒を除外 */
-  private filterEnabled(pieces: Piece[]): Piece[] {
-    return pieces.filter((p: any) => p.enabled !== false);
+  private cloneAndFilter(pieces: Piece[]): Piece[] {
+    return (pieces ?? [])
+      .map(p => ({ ...(p as any) } as Piece))  // シンプルクローン
+      .filter((p: any) => p.enabled !== false);
   }
 
+  /** 枚数変更（音無／言霊／奥義共通） */
   onChangeCount(piece: Piece, value: number | string): void {
-    piece.countInGame = Number(value);
+    (piece as any).countInGame = Number(value);
   }
 
-  /** 奥義: 0 ↔ 1 で切り替え */
+  /** 奥義を 0 ↔ 1 でトグル（クリックで ON/OFF） */
   toggleOugi(piece: Piece): void {
-    piece.countInGame = piece.countInGame === 1 ? 0 : 1;
+    const current = Number((piece as any).countInGame ?? 0);
+    (piece as any).countInGame = current === 1 ? 0 : 1;
   }
 
+  /** 「雷山生成」ボタン */
   onClickSave(): void {
+    let ougiForDeck: Piece[];
+
+    if (this.selectedBattleMode === '雷神戦モード') {
+      // 雷神戦モード: 雷山には奥義を含めない → 全て countInGame=0 にしたクローンを渡す
+      ougiForDeck = this.ougiPieces.map(p => {
+        const clone: any = { ...(p as any) };
+        clone.countInGame = 0;
+        return clone as Piece;
+      });
+    } else {
+      // 雷轟戦モード: そのまま
+      ougiForDeck = this.ougiPieces;
+    }
+
     this.save.emit({
       otonashi: this.otonashiPieces,
       kotodama: this.kotodamaPieces,
-      ougi: this.ougiPieces,
+      ougi: ougiForDeck,
     });
+
     this.close.emit();
   }
 
@@ -67,12 +93,11 @@ export class RaizanSettingsModalComponent implements OnInit {
     this.close.emit();
   }
 
-  // 背景クリックで閉じる
   onClickBackdrop(): void {
     this.close.emit();
   }
 
-  /** 奥義の検索結果（yomi にひらがなが含まれるものだけ） */
+  /** 奥義の検索結果（読みでフィルタ） */
   get filteredOugiPieces(): Piece[] {
     const term = this.ougiSearchTerm.trim();
     if (!term) {
@@ -85,5 +110,28 @@ export class RaizanSettingsModalComponent implements OnInit {
       const yomi: string = (p.yomi ?? '') as string;
       return yomi.toLowerCase().includes(normalized);
     });
+  }
+
+  /**
+   * 「月に置く」ボタン。
+   * countInGame === 1 の奥義だけを集めて外に通知する。
+   * ※実際に Card を作って tsuki に置く処理は呼び出し側に任せる。
+   */
+  onClickPlaceToTsuki(): void {
+    if (this.selectedBattleMode !== '雷神戦モード') return;
+
+    const ougiToPlace = this.ougiPieces.filter((p: any) => {
+      return Number(p.countInGame ?? 0) === 1;
+    });
+
+    if (ougiToPlace.length === 0) {
+      return;
+    }
+
+    // 月に置く先を親へ通知
+    this.placeToTsuki.emit({ ougiPieces: ougiToPlace });
+
+    // ★ 月に置いたらモーダルを閉じる
+    this.close.emit();
   }
 }
