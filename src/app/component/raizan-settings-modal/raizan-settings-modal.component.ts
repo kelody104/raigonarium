@@ -1,6 +1,7 @@
 // src/app/component/raizan-settings-modal/raizan-settings-modal.component.ts
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Piece } from 'models/piece';
+import { TabletopActionService } from 'src/app/service/tabletop-action.service';
 
 type BattleMode = '雷轟戦モード' | '雷神戦モード';
 
@@ -23,6 +24,7 @@ export class RaizanSettingsModalComponent implements OnInit {
 
   @Output() close = new EventEmitter<void>();
 
+  constructor(private tabletopActionService: TabletopActionService) { }
   /**
    * 雷神戦モードで「月に置く」を押したときに飛ばすイベント。
    * 実際に Card を作って tsuki に配置する処理は
@@ -133,5 +135,9 @@ export class RaizanSettingsModalComponent implements OnInit {
 
     // ★ 月に置いたらモーダルを閉じる
     this.close.emit();
+  }
+
+  Createkoma(name: string) {
+    this.tabletopActionService.getCreateRaigokoma(name);
   }
 }

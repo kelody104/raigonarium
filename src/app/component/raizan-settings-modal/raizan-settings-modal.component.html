@@ -43,7 +43,7 @@
         <div class="piece-grid">
           <!-- 音無 -->
           <div class="piece-item" *ngFor="let piece of otonashiPieces">
-            <img class="piece-img"
+            <img class="piece-img"(click)="Createkoma(piece.name)"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
             <div class="piece-name">{{ piece.name }}</div>
@@ -58,7 +58,7 @@
 
           <!-- 言霊 -->
           <div class="piece-item" *ngFor="let piece of kotodamaPieces">
-            <img class="piece-img"
+            <img class="piece-img"(click)="Createkoma(piece.name)"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
             <div class="piece-name">{{ piece.name }}</div>
@@ -94,7 +94,8 @@
           <button type="button"
                   class="piece-ougi-button"
                   *ngFor="let piece of filteredOugiPieces"
-                  (click)="toggleOugi(piece)">
+                  (click)="Createkoma(piece.name)">
+                  <!--(click)="toggleOugi(piece)">-->
             <img [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name"
                  class="piece-img"

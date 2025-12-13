@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Card } from '@udonarium/card';
+import { Card, CardState } from '@udonarium/card';
 import { CardStack } from '@udonarium/card-stack';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
@@ -301,6 +301,24 @@ export class TabletopActionService {
   // ========= スクショ =========
   onClickCaptureViewport() {
     this.viewportCapture.captureViewport('udonarium-screen.png', 800);
+  }
+
+  // ========= 駒生成 =========
+  getCreateRaigokoma(name: string) {
+    const frontUrl = `./assets/images/raigo/koma/${name}.jpg`;
+    const backUrl = `./assets/images/raigo/koma/ura.jpg`;
+
+    if (!ImageStorage.instance.get(frontUrl)) {
+      ImageStorage.instance.add(frontUrl);
+    }
+
+    const card = Card.create(name, frontUrl, backUrl, 1.8);
+
+    card.state = CardState.FRONT;
+    card.location.x = 1550;
+    card.location.y = 1275;
+    SoundEffect.play(PresetSound.cardDraw);
+    return card;
   }
 
   // ========= チェスクロック（隠駒Terrainに格納） =========
