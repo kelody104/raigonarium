@@ -32,6 +32,7 @@ import { SelectionState, TabletopSelectionService } from 'service/tabletop-selec
 import { CommonActionService } from 'service/common-action.service';
 import { SpectatorService } from 'service/spectator.service';
 import { TowerHelper, releaseTower } from 'src/app/class/tower-helper';
+import { judgeTowerYaku } from 'src/app/raigo/yaku-judge';
 
 @Component({
   selector: 'card-stack',
@@ -401,6 +402,22 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   private makeContextMenu(): ContextMenuAction[] {
     let actions: ContextMenuAction[] = [];
+
+    // ★テスト用：役判定の返り値を出す
+    actions.push({
+      name: '塔を解放（テスト）',
+      action: () => {
+        try {
+          //{ yakuName: 'None', yakuType: '役無し', basePoint: 0, bonusPoint: 0 };
+          const yaku = judgeTowerYaku(this.cardStack);
+          if (yaku.basePoint > 0)
+          console.log('[塔を解放（テスト）] judgeTowerYaku =', yaku);
+        } catch (err) {
+          console.error('[塔を解放（テスト）] judgeTowerYaku error =', err);
+        }
+        releaseTower(this.cardStack);
+      }
+    });
 
     actions.push({
       name: '解放する',

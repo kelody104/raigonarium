@@ -1,42 +1,47 @@
 /* src/app/component/raizan-settings-modal/raizan-settings-modal.component.scss */
 
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+}
+
 /* 画面全体を覆う背景 */
 .raizan-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 9999;
+  background: rgba(0, 0, 0, 0.60);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* モーダル本体（高さを固定） */
-.modal {
+/* モーダル本体（元の白い箱っぽい見た目） */
+.raizan-modal {
   background: #fefefe;
   border-radius: 8px;
   padding: 16px;
   width: 90%;
   max-width: 960px;
-  /* 高さを固定して、常に同じサイズにする */
   height: 80vh;
   max-height: 80vh;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
   display: flex;
   flex-direction: column;
 }
 
 /* ヘッダー */
-.modal-header {
+.raizan-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
-}
 
-  .modal-header h2 {
+  h2 {
     margin: 0;
+    font-size: 20px;
   }
+}
 
 /* タイトル行右側のボタン群 */
 .header-buttons {
@@ -45,21 +50,21 @@
   gap: 8px;
 }
 
-  .header-buttons .primary {
-    padding: 4px 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #ffb74d;
-    cursor: pointer;
-  }
+button.primary {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ffb74d;
+  cursor: pointer;
+}
 
-  .header-buttons .secondary {
-    padding: 4px 12px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #f5f5f5;
-    cursor: pointer;
-  }
+button.secondary {
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
 
 .close-button {
   border: none;
@@ -68,29 +73,38 @@
   cursor: pointer;
 }
 
-/* 本文（ここだけスクロール） */
-.modal-body {
+.raizan-body {
   flex: 1;
-  overflow-y: scroll; /* 常にスクロールバーを出す */
+  /* ここを auto → scroll にする */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 6px;
 }
 
-  .modal-body section + section {
+  /* セクション間隔 */
+  .raizan-body section + section {
     margin-top: 16px;
   }
 
-/* フッター（今は未使用だが将来用に残す） */
-.modal-footer {
+/* モード行 */
+.mode-row {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
 
-  button {
-    padding: 4px 12px;
+  .mode-left select {
+    margin-left: 6px;
   }
 
-  .secondary {
-    background: #eee;
+  .mode-middle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-right {
+    margin-left: auto;
   }
 }
 
@@ -98,18 +112,6 @@
 .piece-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 12px;
-}
-
-  /* 音無行の下に少し余白を入れる */
-  .piece-grid + .piece-grid {
-    margin-top: 12px;
-  }
-
-/* 奥義用：1 行 9 個 */
-.piece-grid-ougi {
-  display: grid;
-  grid-template-columns: repeat(9, minmax(64px, 1fr));
   gap: 12px;
 }
 
@@ -128,46 +130,53 @@
   border-radius: 4px;
 }
 
-  /* countInGame = 0 の駒をグレー表示 */
+  /* countInGame = 0 */
   .piece-img.disabled {
     filter: grayscale(100%);
     opacity: 0.4;
   }
 
-/* 奥義ボタン */
-.ougi-button {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-/* テキスト類 */
 .piece-name {
   margin-top: 4px;
   text-align: center;
 }
 
-.piece-count {
+/* ★ 使用数：添付フォーマット */
+.count-row {
   margin-top: 4px;
-  font-size: 11px;
-
-  select {
-    margin-left: 4px;
-  }
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.hint {
+.count-label {
   font-size: 11px;
-  color: #666;
+  color: #999;
 }
 
-/* 奥義検索行 */
+.count-select {
+  width: 40px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid #bdbdbd;
+  background: #fff;
+}
+
+/* 奥義ヘッダー */
+.ougi-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
 .ougi-search-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 
   input[type='text'] {
     padding: 2px 6px;
@@ -180,34 +189,24 @@
   color: #666;
 }
 
-button.primary {
-  background-color: #f6a623; /* 雷山生成と同じオレンジに合わせる想定 */
-  color: rgba(0, 0, 0, 0.6);
+/* ★奥義：1行9個 */
+.piece-grid-ougi {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(64px, 1fr));
+  gap: 12px;
+}
+
+/* ★ボタンを“駒だけ”にする（デカい白タイル化を防ぐ） */
+.ougi-button {
+  background: transparent;
   border: none;
-  border-radius: 4px;
-  padding: 6px 16px;
-  font-weight: 600;
+  padding: 0;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:focus {
+    outline: none;
+  }
 }
-
-  button.primary:hover:not(:disabled) {
-    filter: brightness(1.05);
-  }
-
-  button.primary:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-button.secondary {
-  background-color: #f5f5f5;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 6px 16px;
-  cursor: pointer;
-}
-
-  button.secondary:hover:not(:disabled) {
-    background-color: #e8e8e8;
-  }

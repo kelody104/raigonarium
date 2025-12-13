@@ -18,6 +18,7 @@ import { ContextMenuAction } from './context-menu.service';
 import { PointerCoordinate } from './pointer-device.service';
 import { RaizanSetupService } from './raizan-setup.service';
 import { ViewportCaptureService } from './viewport-capture.service';
+import { Piece } from 'models/piece';
 
 @Injectable({ providedIn: 'root' })
 export class TabletopActionService {
@@ -158,7 +159,9 @@ export class TabletopActionService {
 
   // ========= 初期化 =========
   makeDefaultTable() {
-    const gameTable = new GameTable('gameTable');
+    // 既に viewTable が存在するならそれを初期化する（新規に GameTable を作って viewTableIdentifier を差し替えると表示が崩れる）
+    const existing = this.getViewTableSafe();
+    const gameTable = existing ?? new GameTable('gameTable');
 
     const bgFront = ImageFile.createEmpty('table_bg_front').toContext();
     const bgBack = ImageFile.createEmpty('table_bg_back').toContext();
@@ -175,8 +178,13 @@ export class TabletopActionService {
     gameTable.height = 28;
     gameTable.initialize();
 
-    // 盤面を表示対象に
-    TableSelecter.instance.viewTableIdentifier = gameTable.identifier;
+    // viewTable が無かった場合だけ、ObjectStore に登録して表示対象にする
+    if (!existing) {
+      ObjectStore.instance.add(gameTable);
+      TableSelecter.instance.viewTableIdentifier = gameTable.identifier;
+    }
+
+    EventSystem.register(this);
   }
 
   makeDefaultTabletopObjects() {
@@ -304,7 +312,12 @@ export class TabletopActionService {
   }
 
   // ========= 駒生成 =========
-  getCreateRaigokoma(name: string) {
+  // ========= 駒生成 =========
+  // Piece を渡された場合は、json由来の各種情報を Card にも付与する
+  getCreateRaigokoma(pieceOrName: Piece | string) {
+    const piece: Piece | null = (typeof pieceOrName === 'string') ? null : pieceOrName;
+    const name: string = (typeof pieceOrName === 'string') ? pieceOrName : (pieceOrName as any).name;
+
     const frontUrl = `./assets/images/raigo/koma/${name}.jpg`;
     const backUrl = `./assets/images/raigo/koma/ura.jpg`;
 
@@ -312,14 +325,125 @@ export class TabletopActionService {
       ImageStorage.instance.add(frontUrl);
     }
 
+    if (!ImageStorage.instance.get(backUrl)) {
+      ImageStorage.instance.add(backUrl);
+    }
+
     const card = Card.create(name, frontUrl, backUrl, 1.8);
+
+    if (piece) this.applyPieceInfoToCard(card, piece);
 
     card.state = CardState.FRONT;
     card.location.x = 1550;
     card.location.y = 1275;
+    console.log(card);
     SoundEffect.play(PresetSound.cardDraw);
     return card;
   }
+
+  // jsonにある id,data,name,yomi,kind,weight,countInGame,effect,text,enabled,
+  // specialstr1,specialstr2,specialnum1,specialnum2,specialboo1,specialboo2 を Card に付与する
+  private applyPieceInfoToCard(card: Card, piece: Piece): void {
+    const c: any = card as any;
+
+    // Card の「表示名」は getter-only なので、commonDataElement の name を更新する
+    const setDataElementValue = (el: any, v: any) => {
+      const s = (v === undefined || v === null) ? '' : String(v);
+      if (!el) return;
+      if ('value' in el) el.value = s;
+      else if ('currentValue' in el) el.currentValue = s;
+      else el.value = s;
+    };
+
+    const common: any = c?.commonDataElement;
+    if (common && (piece as any).name !== undefined) {
+      const nameEl =
+        common.getFirstElementByName?.('name')
+        ?? (common.children ?? []).find((x: any) => x?.name === 'name');
+      setDataElementValue(nameEl, (piece as any).name);
+    }
+
+    const keys = [
+      'id', 'data', 'name', 'yomi', 'kind', 'weight', 'countInGame', 'effect', 'text', 'enabled',
+      'specialstr1', 'specialstr2', 'specialnum1', 'specialnum2', 'specialboo1', 'specialboo2'
+    ] as const;
+
+    for (const k of keys) {
+      const v = (piece as any)[k];
+      if (v === undefined) continue;
+
+      // getter-only（setter無し）プロパティには代入しない（name 等）
+      const desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(card), k);
+      const getterOnly = !!desc && typeof desc.get === 'function' && !desc.set;
+      if (getterOnly) continue;
+
+      try {
+        c[k] = v;
+      } catch {
+        // 代入できないものは無視（同期オブジェクトのgetter-only等の事故回避）
+      }
+    }
+
+    // 既存コード互換
+    if ((piece as any).id !== undefined) c.raigonId = (piece as any).id;
+    if ((piece as any).kind !== undefined) c.raigonKind = (piece as any).kind;
+    if ((piece as any).weight !== undefined) c.weight = (piece as any).weight;
+
+    // commonDataElement.detail にも入れて参照しやすくする（ここは従来通り）
+    const detail = this.ensureDetailElement(c);
+    const cid = String(c.identifier ?? '');
+
+    this.setDetailValue(detail, 'id', (piece as any).id, cid);
+    this.setDetailValue(detail, 'data', (piece as any).data, cid);
+    this.setDetailValue(detail, 'name', (piece as any).name, cid);
+    this.setDetailValue(detail, 'yomi', (piece as any).yomi, cid);
+    this.setDetailValue(detail, 'kind', (piece as any).kind, cid);
+    this.setDetailValue(detail, 'weight', (piece as any).weight, cid);
+    this.setDetailValue(detail, 'countInGame', (piece as any).countInGame, cid);
+    this.setDetailValue(detail, 'effect', (piece as any).effect, cid);
+    this.setDetailValue(detail, 'text', (piece as any).text, cid);
+    this.setDetailValue(detail, 'enabled', (piece as any).enabled, cid);
+    this.setDetailValue(detail, 'specialstr1', (piece as any).specialstr1, cid);
+    this.setDetailValue(detail, 'specialstr2', (piece as any).specialstr2, cid);
+    this.setDetailValue(detail, 'specialnum1', (piece as any).specialnum1, cid);
+    this.setDetailValue(detail, 'specialnum2', (piece as any).specialnum2, cid);
+    this.setDetailValue(detail, 'specialboo1', (piece as any).specialboo1, cid);
+    this.setDetailValue(detail, 'specialboo2', (piece as any).specialboo2, cid);
+  }
+
+  private ensureDetailElement(cardLike: any): any {
+    const root: any = cardLike?.commonDataElement;
+    if (!root) return null;
+
+    const children: any[] = root.children ?? [];
+    let detail = children.find((x: any) => x?.name === 'detail');
+
+    if (!detail) {
+      detail = DataElement.create('detail', '', {}, `detail_${cardLike.identifier}`);
+      root.appendChild(detail);
+    }
+
+    return detail;
+  }
+
+  private setDetailValue(detail: any, key: string, value: any, cardId: string): void {
+    if (!detail) return;
+
+    const children: any[] = detail.children ?? [];
+    let child = children.find((x: any) => x?.name === key);
+    const v = (value === undefined || value === null) ? '' : String(value);
+
+    if (!child) {
+      child = DataElement.create(key, v, {}, `${key}_${cardId}`);
+      detail.appendChild(child);
+      return;
+    }
+
+    if ('value' in child) (child as any).value = v;
+    else if ('currentValue' in child) (child as any).currentValue = v;
+    else (child as any).value = v;
+  }
+
 
   // ========= チェスクロック（隠駒Terrainに格納） =========
   getChessClockTerrain(): Terrain {

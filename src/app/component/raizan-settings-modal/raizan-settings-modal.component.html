@@ -1,109 +1,116 @@
 <!-- src/app/component/raizan-settings-modal/raizan-settings-modal.component.html -->
-<!-- 画面全体を覆う半透明の背景 -->
 <div class="raizan-backdrop" (click)="onClickBackdrop()">
-  <!-- モーダル本体。クリックを背景に伝播させない -->
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
+  <div class="raizan-modal" (click)="$event.stopPropagation()">
+
+    <div class="raizan-header">
       <h2>雷山設定</h2>
+
       <div class="header-buttons">
         <button type="button" class="primary" (click)="onClickSave()">雷山生成</button>
-        <button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>
+        <!--<button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>-->
+        <div class="mode-right">
+          <button type="button"
+                  class="primary"
+                  (click)="onClickPlaceToTsuki()">
+                  <!--[disabled]="selectedBattleMode !== '雷神戦モード'"-->
+            月に置く
+          </button>
+        </div>
         <button type="button" class="close-button" (click)="onClickClose()">×</button>
       </div>
     </div>
 
-    <div class="modal-body">
+    <div class="raizan-body">
 
-      <!-- ★ モード選択 ＋ 月に置く（同じ行） -->
-      <section class="mode-row">
-        <div class="mode-left">
-          <label>
-            モード選択：
-            <select [(ngModel)]="selectedBattleMode">
-              <option *ngFor="let mode of battleModes" [ngValue]="mode">
-                {{ mode }}
-              </option>
-            </select>
-          </label>
-        </div>
-        <div class="mode-right">
-          <button type="button"
-                  class="primary"
-                  (click)="onClickPlaceToTsuki()"
-                  [disabled]="selectedBattleMode !== '雷神戦モード'">
-            月に置く
-          </button>
-        </div>
-      </section>
+      <!--<section class="mode-row">
+        <label class="mode-left">
+          モード選択：
+          <select [(ngModel)]="selectedBattleMode">
+            <option *ngFor="let mode of battleModes" [ngValue]="mode">{{ mode }}</option>
+          </select>
+        </label>-->
 
-      <!-- === 音無 & 言霊 設定 === -->
+        <!--<label class="mode-middle">
+          <input type="checkbox" [(ngModel)]="useGora" />
+          <span>豪雷を使用する</span>
+        </label>-->
+
+
+      <!--</section>-->
+
       <section>
         <h3>音無 &amp; 言霊</h3>
 
         <div class="piece-grid">
-          <!-- 音無 -->
           <div class="piece-item" *ngFor="let piece of otonashiPieces">
-            <img class="piece-img"(click)="Createkoma(piece.name)"
+            <img class="piece-img" (click)="Createkoma(piece)"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
-            <div class="piece-name">{{ piece.name }}</div>
-            <select class="piece-count"
-                    [ngModel]="piece.countInGame"
-                    (ngModelChange)="onChangeCount(piece, $event)">
-              <option *ngFor="let c of countOptions" [ngValue]="c">
-                {{ c }}
-              </option>
-            </select>
+            <!--<div class="piece-name">{{ piece.name }}</div>-->
+
+            <div class="count-row">
+              <span class="count-label">使用数</span>
+              <select class="count-select"
+                      [ngModel]="piece.countInGame"
+                      (ngModelChange)="onChangeCount(piece, $event)">
+                <option *ngFor="let c of countOptions" [ngValue]="c">{{ c }}</option>
+              </select>
+            </div>
           </div>
 
-          <!-- 言霊 -->
           <div class="piece-item" *ngFor="let piece of kotodamaPieces">
-            <img class="piece-img"(click)="Createkoma(piece.name)"
+            <img class="piece-img" (click)="Createkoma(piece)"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
-            <div class="piece-name">{{ piece.name }}</div>
-            <select class="piece-count"
-                    [ngModel]="piece.countInGame"
-                    (ngModelChange)="onChangeCount(piece, $event)">
-              <option *ngFor="let c of countOptions" [ngValue]="c">
-                {{ c }}
-              </option>
-            </select>
+            <!--<div class="piece-name">{{ piece.name }}</div>-->
+
+            <div class="count-row">
+              <span class="count-label">使用数</span>
+              <select class="count-select"
+                      [ngModel]="piece.countInGame"
+                      (ngModelChange)="onChangeCount(piece, $event)">
+                <option *ngFor="let c of countOptions" [ngValue]="c">{{ c }}</option>
+              </select>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- === 奥義エリア === -->
       <section class="ougi-section">
         <div class="ougi-header">
           <h3>奥義</h3>
+
           <div class="ougi-search-row">
             <label>
-              読みで検索：
+              検索：
               <input type="text"
                      [(ngModel)]="ougiSearchTerm"
-                     placeholder="ひらがなで入力" />
+                     placeholder="ひらがなで入力（例：はく）" />
             </label>
+
             <span class="ougi-search-count">
-              {{ filteredOugiPieces.length }} / {{ ougiPieces.length }} 件
+              該当 {{ filteredOugiPieces.length }} / {{ ougiPieces.length }} 個
             </span>
           </div>
         </div>
 
+        <!-- ★ 1行9個 -->
         <div class="piece-grid-ougi">
           <button type="button"
-                  class="piece-ougi-button"
+                  class="ougi-button"
                   *ngFor="let piece of filteredOugiPieces"
-                  (click)="Createkoma(piece.name)">
-                  <!--(click)="toggleOugi(piece)">-->
-            <img [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
+                  (click)="Createkoma(piece)">
+            <!--toggleOugi(piece)-->
+            <img class="piece-img"
+                 [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name"
-                 class="piece-img"
                  [class.disabled]="piece.countInGame === 0" />
+            <!--<div class="piece-name">{{ piece.name }}</div>-->
           </button>
         </div>
       </section>
 
     </div>
+
   </div>
 </div>

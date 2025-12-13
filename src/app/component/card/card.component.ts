@@ -162,7 +162,6 @@ export class CardComponent implements OnDestroy, OnChanges, AfterViewInit {
     this.ngZone.runOutsideAngular(() => {
       this.interactGesture = new ObjectInteractGesture(this.elementRef.nativeElement);
     });
-
     this.interactGesture.onstart = this.onInputStart.bind(this);
     this.interactGesture.oninteract = this.onDoubleClick.bind(this);
   }
@@ -268,7 +267,7 @@ export class CardComponent implements OnDestroy, OnChanges, AfterViewInit {
     SoundEffect.play(PresetSound.cardPick);
 
     // ★ ドラッグ開始（マスク ON）
-    console.log(this.card.location.x + "," + this.card.location.y);
+/*    console.log(this.card.location.x + "," + this.card.location.y);*/
     this.gorgeService.beginDrag();
   }
 

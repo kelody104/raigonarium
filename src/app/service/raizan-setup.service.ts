@@ -19,6 +19,8 @@ import gameLayout from 'src/assets/json/game/game.json';
 import { PlayerKey } from 'service/gorge.service';
 import { CommonActionService } from 'service/common-action.service';
 
+type BattleMode = '雷轟戦モード' | '雷神戦モード';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,21 +29,29 @@ export class RaizanSetupService {
   /**
    * ★モーダルの内容を反映して雷山を生成
    *   - otonashi / kotodama / ougi の Piece 配列の countInGame をそのまま使う
+   *   - battleMode === '雷神戦モード' のときは、雷山には奥義を入れない（※月に置く想定）
+   *   - useGora === true のときは、除外する1枚（raizan2）を表向きにする
    */
   setupRaizanFromSettings(params: {
     otonashi: Piece[];
     kotodama: Piece[];
     ougi: Piece[];
+    battleMode?: BattleMode;
+    useGora?: boolean;
   }): { raizanStack: CardStack; raizanTop: Card | null } {
-    const { otonashi, kotodama, ougi } = params;
+    const { otonashi, kotodama, ougi, battleMode, useGora } = params;
 
+    // 雷神戦モードなら奥義は雷山に入れない（＝月に置く前提）
+    const ougiForDeck = (battleMode === '雷神戦モード') ? [] : (ougi ?? []);
+
+    // ★ここは3引数のまま（TS2554回避）
     const deckDefs = buildRaizanDeckFromSettings(
-      otonashi,
-      kotodama,
-      ougi,
+      otonashi ?? [],
+      kotodama ?? [],
+      ougiForDeck,
     );
 
-    return this.buildRaizanFromDeckDefs(deckDefs);
+    return this.buildRaizanFromDeckDefs(deckDefs, !!useGora);
   }
 
   /**
@@ -53,7 +63,7 @@ export class RaizanSetupService {
     raizanTop: Card | null;
   } {
     const deckDefs: RaigonCardDef[] = buildRaizanDeck(includeOugi);
-    return this.buildRaizanFromDeckDefs(deckDefs);
+    return this.buildRaizanFromDeckDefs(deckDefs, false);
   }
 
   /**
@@ -109,7 +119,6 @@ export class RaizanSetupService {
       }
 
       const card = Card.create(name, frontUrl, backUrl, 1.8);
-
       (card as any).raigonId = (piece as any).id;
 
       card.state = CardState.FRONT;
@@ -123,9 +132,7 @@ export class RaizanSetupService {
   /** 現在のプレイヤーを取得（なければ player1 扱い） */
   private getCurrentPlayer(): PlayerKey {
     const common = CommonActionService.instance;
-    if (!common) {
-      return 'player1';
-    }
+    if (!common) return 'player1';
     return common.getCurrentPlayer() as PlayerKey;
   }
 
@@ -134,9 +141,7 @@ export class RaizanSetupService {
     const layout: any = gameLayout as any;
     const playerLayout = layout && layout[player];
 
-    if (!playerLayout || !playerLayout.tsuki) {
-      return null;
-    }
+    if (!playerLayout || !playerLayout.tsuki) return null;
 
     const tsuki = playerLayout.tsuki;
     return { x: tsuki.x, y: tsuki.y };
@@ -144,8 +149,9 @@ export class RaizanSetupService {
 
   /**
    * 共通部分：deckDefs から実際の Card / CardStack を構築する
+   * - useGora === true の場合、raizan2 に出す1枚を表にする
    */
-  private buildRaizanFromDeckDefs(deckDefs: RaigonCardDef[]): {
+  private buildRaizanFromDeckDefs(deckDefs: RaigonCardDef[], useGora: boolean): {
     raizanStack: CardStack;
     raizanTop: Card | null;
   } {
@@ -186,11 +192,11 @@ export class RaizanSetupService {
     ObjectStore.instance.add(raizanStack);
     raizanStack.uprightAll();
 
-    // ⑤ 1枚引いて raizan2 に裏向きで配置 & ロック
+    // ⑤ 1枚引いて raizan2 に配置 & ロック
     const topCard = raizanStack.drawCard();
 
     if (topCard) {
-      topCard.state = CardState.BACK;
+      topCard.state = useGora ? CardState.FRONT : CardState.BACK; // ★ここが「豪雷を使用する」
       topCard.location.x = RAIzanPos.raizan2.x;
       topCard.location.y = RAIzanPos.raizan2.y;
       topCard.isLocked = true;

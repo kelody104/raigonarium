@@ -56,7 +56,7 @@ export class TowerHelper {
     for (const card of towerCards) {
       card.location.x = stack.location.x;
       card.location.y = stack.location.y;
-      stack.putOnTop(card); // 既存の appendCard / putOnTop などに合わせる
+      stack.putOnBottom(card); // 既存の appendCard / putOnTop などに合わせる
     }
     SoundEffect.play(PresetSound.cardPick);
   }
