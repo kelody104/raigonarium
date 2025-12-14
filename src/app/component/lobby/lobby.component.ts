@@ -1,15 +1,18 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { EventSystem, Network } from '@udonarium/core/system';
 import { IRoomInfo } from '@udonarium/core/system/network/room-info';
 import { PeerCursor } from '@udonarium/peer-cursor';
-
 import { PasswordCheckComponent } from 'component/password-check/password-check.component';
 import { RoomSettingComponent } from 'component/room-setting/room-setting.component';
 import { TournamentRoomSettingComponent } from '../tournament-room-setting/tournament-room-setting.component';
 import { ModalService } from 'service/modal.service';
 import { PanelService } from 'service/panel.service';
+import { PeerContext } from '@udonarium/core/system/network/peer-context';
+import { PeerSessionGrade } from '@udonarium/core/system/network/peer-session-state';
+import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
+import { AppConfig, AppConfigService } from 'service/app-config.service';
 
 @Component({
   selector: 'lobby',
@@ -22,6 +25,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
   isReloading: boolean = false;
 
   help: string = '「一覧を更新」ボタンを押すと接続可能なルーム一覧を表示します。';
+
+  //===============接続情報==================
+  targetUserId: string = '';
+  networkService = Network;
+  gameRoomService = ObjectStore.instance;
+  helpPeer: string = '';
+  isPasswordVisible = false;
 
   get currentRoom(): string { return Network.peer.roomId };
   get peerId(): string { return Network.peerId; }
@@ -39,6 +49,27 @@ export class LobbyComponent implements OnInit, OnDestroy {
     return (room.name || '').replace(/\[(\d+)\]$/, '');
   }
 
+  //===============接続情報==================
+  get myPeer(): PeerCursor { return PeerCursor.myCursor; }
+  get config(): AppConfig { return AppConfigService.appConfig; }
+  get canUsePrivateSession(): boolean { return this.config.backend.mode == 'skyway'; }
+
+  findUserId(peerId: string) {
+    const peerCursor = PeerCursor.findByPeerId(peerId);
+    return peerCursor ? peerCursor.userId : '';
+  }
+
+  findPeerName(peerId: string) {
+    const peerCursor = PeerCursor.findByPeerId(peerId);
+    return peerCursor ? peerCursor.name : '';
+  }
+
+  stringFromSessionGrade(grade: PeerSessionGrade): string {
+    return PeerSessionGrade[grade] ?? PeerSessionGrade[PeerSessionGrade.UNSPECIFIED];
+  }
+
+  togglePasswordVisibility() { this.isPasswordVisible = !this.isPasswordVisible; }
+
   // ★追加：接続してよいか（満室なら false）
   canConnect(room: IRoomInfo): boolean {
     const capacity = this.getRoomCapacity(room);
@@ -48,7 +79,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
 
   constructor(
     private panelService: PanelService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    public appConfigService: AppConfigService,
   ) { }
 
   ngOnInit() {
@@ -160,5 +192,24 @@ export class LobbyComponent implements OnInit, OnDestroy {
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
     this.modalService.open(TournamentRoomSettingComponent, { width, height, left, top });
+  }
+
+  //===============接続情報==================
+  changeIcon() {
+    this.modalService.open<string>(FileSelecterComponent).then(value => {
+      if (!this.myPeer || !value) return;
+      this.myPeer.imageIdentifier = value;
+    });
+  }
+
+  connectPeer() {
+    let targetUserId = this.targetUserId;
+    this.targetUserId = '';
+    if (targetUserId.length < 1) return;
+    this.helpPeer = '';
+    let peer = PeerContext.create(targetUserId);
+    if (peer.isRoom) return;
+    ObjectStore.instance.clearDeleteHistory();
+    Network.connect(peer);
   }
 }

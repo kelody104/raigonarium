@@ -14,10 +14,13 @@ import { PresetSound, SoundEffect } from '@udonarium/sound-effect';
 import { TableSelecter } from '@udonarium/table-selecter';
 import { Terrain } from '@udonarium/terrain';
 import { TextNote } from '@udonarium/text-note';
+import { LobbyComponent } from 'component/lobby/lobby.component';
 import { ContextMenuAction } from './context-menu.service';
 import { PointerCoordinate } from './pointer-device.service';
 import { RaizanSetupService } from './raizan-setup.service';
 import { ViewportCaptureService } from './viewport-capture.service';
+import { CommonActionService } from 'service/common-action.service';
+import { ModalService } from 'service/modal.service';
 import { Piece } from 'models/piece';
 
 @Injectable({ providedIn: 'root' })
@@ -26,7 +29,9 @@ export class TabletopActionService {
 
   constructor(
     private viewportCapture: ViewportCaptureService,
-    private raizanSetupService: RaizanSetupService
+    private raizanSetupService: RaizanSetupService,
+    private commonActionService: CommonActionService,
+    private modalService: ModalService,
   ) { }
 
   // ========= 基本 =========
@@ -183,13 +188,13 @@ export class TabletopActionService {
       ObjectStore.instance.add(gameTable);
       TableSelecter.instance.viewTableIdentifier = gameTable.identifier;
     }
-
     EventSystem.register(this);
   }
 
   makeDefaultTabletopObjects() {
     // 隠駒(ongoma)を固定配置（ここにチェスクロックも格納）
     //this.createRaigoOngoma();
+
   }
 
   // ========= 隠駒(ongoma) =========
@@ -340,6 +345,60 @@ export class TabletopActionService {
     SoundEffect.play(PresetSound.cardDraw);
     return card;
   }
+
+  // ========= 名札 =========
+  createNameplate(name: string, rank: number): Card {
+    const url = this.getNameplateUrl_(rank);
+
+    // 画像を確実に登録
+    this.ensureImage(url);
+
+    // 指定どおり（表裏同じ画像、サイズ8）
+    const card = Card.create('名札', url, url, 8);
+    card.state = CardState.FRONT;
+
+    // card.name は getter-only のことがあるので commonDataElement の name を更新する
+    const c: any = card as any;
+    const common: any = c?.commonDataElement;
+    const nameEl =
+      common?.getFirstElementByName?.('name')
+      ?? (common?.children ?? []).find((x: any) => x?.name === 'name');
+
+    if (nameEl) nameEl.value = name;
+
+    // 置き場所（とりあえず駒と同じ。必要なら引数に position を増やす）
+    const player = this.commonActionService.getCurrentPlayer();
+
+    card.location.x = (player === 'player1') ? 50 : 2000;
+    card.location.y = (player === 'player1') ? 1240 : 45;
+    card.posZ = 0;
+
+    SoundEffect.play(PresetSound.cardDraw);
+    return card;
+  }
+
+  private getNameplateUrl_(rank: number): string {
+    switch (rank) {
+      case 0: return './assets/images/raigo/nameplate/temp.png';
+      case 1: return './assets/images/raigo/nameplate/temp[1].png';
+      case 2: return './assets/images/raigo/nameplate/temp[1].png';
+      case 3: return './assets/images/raigo/nameplate/temp[1].png';
+      case 4: return './assets/images/raigo/nameplate/temp[1].png';
+      case 5: return './assets/images/raigo/nameplate/temp[2].png';
+      case 6: return './assets/images/raigo/nameplate/temp[2].png';
+      case 7: return './assets/images/raigo/nameplate/temp[2].png';
+      case 8: return './assets/images/raigo/nameplate/temp[2].png';
+      case 9: return './assets/images/raigo/nameplate/temp[2].png';
+      case 10: return './assets/images/raigo/nameplate/temp[3].png';
+      case 11: return './assets/images/raigo/nameplate/temp[4].png';
+      case 12: return './assets/images/raigo/nameplate/temp[5].png';
+      case 13: return './assets/images/raigo/nameplate/temp[6].png';
+      case 14: return './assets/images/raigo/nameplate/temp[7].png';
+      case 15: return './assets/images/raigo/nameplate/temp[8].png';
+      default: return './assets/images/raigo/nameplate/temp.png';    }
+  }
+
+
 
   // jsonにある id,data,name,yomi,kind,weight,countInGame,effect,text,enabled,
   // specialstr1,specialstr2,specialnum1,specialnum2,specialboo1,specialboo2 を Card に付与する

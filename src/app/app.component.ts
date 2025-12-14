@@ -28,6 +28,7 @@ import { GameCharacterSheetComponent } from 'component/game-character-sheet/game
 import { GameObjectInventoryComponent } from 'component/game-object-inventory/game-object-inventory.component';
 import { GameTableSettingComponent } from 'component/game-table-setting/game-table-setting.component';
 import { JukeboxComponent } from 'component/jukebox/jukebox.component';
+import { LobbyComponent } from 'component/lobby/lobby.component';
 import { ModalComponent } from 'component/modal/modal.component';
 import { PeerMenuComponent } from 'component/peer-menu/peer-menu.component';
 import { TextViewComponent } from 'component/text-view/text-view.component';
@@ -211,8 +212,11 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
     let familyCode = this.commonActionService.getFamilyCode(randomvalue);
 
     PeerCursor.createMyCursor();
-    PeerCursor.myCursor.name = 'プレイヤー';
-    PeerCursor.myCursor.imageIdentifier = IconImages[randomvalue].identifier;
+    const params = new URLSearchParams(window.location.search);
+    const name = (params.get('name') ?? '').trim();
+
+    PeerCursor.myCursor.name = name || '名も無き雷人';
+    PeerCursor.myCursor.update?.();    PeerCursor.myCursor.imageIdentifier = IconImages[randomvalue].identifier;
 
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })
@@ -267,6 +271,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
     setTimeout(() => {
       // this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
       // this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
+      this.modalService.open(LobbyComponent, { width: 700, height: 400, left: (window.innerWidth - 700) / 2, top: (window.innerHeight - 400) / 2 });
     }, 0);
   }
 
@@ -338,6 +343,12 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
       this.kotodamaPieces = kotodama;
       this.ougiPieces = ougi;
     });
+    //this.route.queryParamMap.subscribe(params => {
+    //  const name = (params.get('name') ?? '').trim();
+
+    //  // 空なら既定値
+    //  PeerCursor.myCursor.name = name || '名も無き雷人';
+    //});
   }
 
   // メニューから開閉
@@ -423,6 +434,10 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
         break;
       case 'GameObjectInventoryComponent':
         component = GameObjectInventoryComponent;
+        break;
+      case 'LobbyComponent':
+        component = LobbyComponent;
+        option = { width: 700, height: 400, left: (window.innerWidth - 700) / 2, top: (window.innerHeight - 400) / 2 };
         break;
     }
     if (component) {
