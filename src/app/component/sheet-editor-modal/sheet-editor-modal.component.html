@@ -22,10 +22,10 @@
             <input type="text" [(ngModel)]="filterId" placeholder="IDを入力（空なら0件）" />
           </label>
 
-          <label class="field">
+          <!--<label class="field">
             <span class="field-label">表示件数：</span>
             <input type="number" [(ngModel)]="limit" min="1" max="1000" />
-          </label>
+          </label>-->
 
           <button type="button" class="secondary" (click)="onClickSearch()" [disabled]="loading">検索</button>
 
@@ -41,12 +41,12 @@
 
           <div class="row" *ngFor="let r of rows" (click)="selectRow(r)">
             <div class="row-top">
-              <span class="mono">#{{ r.rowNumber }}</span>
+              <!--<span class="mono">#{{ r.rowNumber }}</span>-->
               <span class="mono">ID: {{ r.playerId }}</span>
               <span class="name">{{ r.playerName }}</span>
             </div>
             <div class="row-bottom">
-              <span class="mono">{{ r.tournamentId }}</span>
+              <!--<span class="mono">{{ r.tournamentId }}</span>-->
               <span class="tname">{{ tournamentNameOf(r.tournamentId) }}</span>
             </div>
           </div>
@@ -73,12 +73,12 @@
 
           <label class="field">
             <span class="field-label">ID：</span>
-            <input type="text" [(ngModel)]="edit.playerId" />
+            <input type="text" [(ngModel)]="edit.playerId" placeholder="IDを設定してエントリー" />
           </label>
 
           <label class="field">
             <span class="field-label">雷名：</span>
-            <input type="text" [(ngModel)]="edit.playerName" />
+            <input type="text" [(ngModel)]="edit.playerName" placeholder="名も無き雷人" />
           </label>
         </div>
 
