@@ -3,60 +3,64 @@
 }
 
 nav ul {
-    list-style:none;
+  list-style: none;
+  padding: 8px;
+  margin: 0px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+  nav ul > li {
+    text-align: center;
     padding: 0px;
-    margin: 0px;
-  /*
-  border: 1px solid #bbb;
-  border-radius: 5px;
-  padding: 5px;
-  background-color: rgba(30, 30, 30, 0.8);
-  */
-}
+    color: #444;
+    cursor: pointer;
+    white-space: nowrap;
+  }
 
-nav ul > li {
-  text-align: center;
-  padding: 5px;
-  color: #CCC;
-  color: #444;
+/*    nav ul > li:hover {
+      color: #CCC;
+      background-color: rgba(30, 30, 30, 0.8);
+      border-radius: 8px;
+    }*/
 
-  cursor: -moz-pointer;
-  cursor: -webkit-pointer;
-  cursor: pointer;
-  white-space: nowrap;
-}
+    nav ul > li:hover i {
+      color: #ffb74d; /* 好きな色に */
+    }
 
-nav ul > li:hover {
-  color: #CCC;
-  background-color: rgba(30, 30, 30, 0.8);
-}
-nav ul > li > a {
-  height: 128px;
-  width: 128px;
-  font-size: 10px;
-  user-select: none;
-}
-nav ul > li > a > label {
-  cursor: -moz-pointer;
-  cursor: -webkit-pointer;
-  cursor: pointer;
-}
-nav ul i {
-  font-size: 24px;
-}
-nav ul a, nav ul a:hover, nav ul a:active, nav ul a:visited {
-  text-decoration: none;
-}
+    nav ul > li > a {
+      width: 10px;
+      height: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      user-select: none;
+    }
 
+  nav ul i {
+    color: #444; /* 好きな色に */
+    font-size: 24px;
+  }
+
+  nav ul a,
+  nav ul a:hover,
+  nav ul a:active,
+  nav ul a:visited {
+    text-decoration: none;
+  }
+
+/* 既存（使ってるなら残す） */
 .icon-size {
-  font-size: 40px;
+  font-size: 10px;
 }
+
 .icon-size-svg {
   width: 40px;
   height: 30px;
   display: inline-block;
 }
-
 
 .side-menu {
   top: 0px;
@@ -66,7 +70,7 @@ nav ul a, nav ul a:hover, nav ul a:active, nav ul a:visited {
   position: absolute;
   color: #CCC;
   background-color: rgba(30, 30, 30, 0.8);
-  border:solid 1px #999;
+  border: solid 1px #999;
   padding: 0px;
   height: 100%;
   width: 300px;
@@ -88,9 +92,17 @@ nav ul a, nav ul a:hover, nav ul a:active, nav ul a:visited {
 }
 
 @keyframes vibration {
-  0%   { transform: scale(1.0, 1.0) translate(0%, 0%); }
-  50%  { transform: scale(1.02, 0.95) translate(0%, 5%); }
-  100% { transform: scale(1.0, 1.0) translate(0%, 0%); }
+  0% {
+    transform: scale(1.0, 1.0) translate(0%, 0%);
+  }
+
+  50% {
+    transform: scale(1.02, 0.95) translate(0%, 5%);
+  }
+
+  100% {
+    transform: scale(1.0, 1.0) translate(0%, 0%);
+  }
 }
 
 /* アイコン + バッジのコンテナ */
@@ -102,17 +114,17 @@ nav ul a, nav ul a:hover, nav ul a:active, nav ul a:visited {
 /* メニューバーのチャット未読バッジ */
 .menu-badge {
   position: absolute;
-  top: -4px; /* 好みで微調整 */
-  right: -8px; /* 好みで微調整 */
+  top: -4px;
+  right: -8px;
   min-width: 16px;
   height: 16px;
   padding: 0 0px;
   border-radius: 8px;
-  background-color: #f44336; /* 赤系 */
+  background-color: #f44336;
   color: #fff;
   font-size: 10px;
   line-height: 16px;
   text-align: center;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .2);
-  pointer-events: none; /* クリックを邪魔しないように */
+  pointer-events: none;
 }
