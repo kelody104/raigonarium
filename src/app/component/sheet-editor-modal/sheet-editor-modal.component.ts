@@ -84,8 +84,21 @@ export class SheetEditorModalComponent implements OnInit {
     }
   }
 
-  test() {
-    console.log("aaa");
+  private genPlayerId_(): string {
+    const randInt = (maxExclusive: number): number => {
+      // できれば crypto を使う（偏りが少ない）
+      const g = (globalThis as any)?.crypto?.getRandomValues ? (globalThis as any).crypto : null;
+      if (g) {
+        const buf = new Uint32Array(1);
+        g.getRandomValues(buf);
+        return buf[0] % maxExclusive;
+      }
+      return Math.floor(Math.random() * maxExclusive);
+    };
+
+    const letter = String.fromCharCode(65 + randInt(26)); // A-Z
+    const num = randInt(1000).toString().padStart(3, '0'); // 000-999
+    return `${letter}${num}`;
   }
 
   debugOugi(p: OugiPiece, ev: Event): void {
@@ -186,6 +199,11 @@ export class SheetEditorModalComponent implements OnInit {
   async onClickSave(): Promise<void> {
     this.error = '';
 
+    if (this.edit.mode === 'append' && !this.edit.playerId.trim()) {
+      // 画面に反映されるよう edit にセット
+      this.edit.playerId = this.genPlayerId_();
+    }
+
     const tournamentId = this.edit.tournamentId.trim();
     if (!tournamentId) {
       this.error = '大会名（大会ID）は必須です';
@@ -194,8 +212,7 @@ export class SheetEditorModalComponent implements OnInit {
 
     const playerId = this.edit.playerId.trim();
     if (!playerId) {
-      this.error = 'IDは必須です';
-      return;
+      this.error = 'あなたの参加者IDは【' + this.edit.playerId + '】です。忘れないようにメモしてください。';
     }
 
     const playerName = this.edit.playerName.trim();
@@ -210,6 +227,10 @@ export class SheetEditorModalComponent implements OnInit {
     try {
       if (this.edit.mode === 'append') {
         await this.sheetApi.appendEntry(tournamentId, playerId, playerName, items);
+        const ok = window.confirm('大会エントリーが完了しました。\nあなたの参加者IDは【' + playerId + '】です。\nエントリー内容を変更する場合は、このIDが必要になります。\n忘れないようにメモしてください。');
+        if (!ok) return;
+        this.filterId = playerId;   // ←登録したIDを検索欄に残す
+
         this.edit = this.newAppend_();
       } else {
         if (!this.edit.rowNumber) throw new Error('rowNumber がありません');

@@ -36,7 +36,7 @@
 
         <div class="list">
           <div class="empty" *ngIf="rows.length === 0">
-            IDを入力して「検索」を押してください
+            参加者IDを入力して「検索」を押してください
           </div>
 
           <div class="row" *ngFor="let r of rows" (click)="selectRow(r)">
@@ -55,10 +55,10 @@
 
       <!-- 右：新規追加 / 更新 -->
       <section class="pane right">
-        <div class="form-title">
-          <!--<span *ngIf="edit.mode==='append'">新規追加</span>-->
+        <!--<div class="form-title">
+          <span *ngIf="edit.mode==='append'">新規追加</span>
           <span *ngIf="edit.mode==='update'">更新</span>
-        </div>
+        </div>-->
 
         <div class="form-row3">
           <label class="field">
@@ -71,10 +71,10 @@
             </select>
           </label>
 
-          <label class="field">
+          <!--<label class="field">
             <span class="field-label">ID：</span>
             <input type="text" [(ngModel)]="edit.playerId" placeholder="IDを設定してエントリー" />
-          </label>
+          </label>-->
 
           <label class="field">
             <span class="field-label">雷名：</span>
