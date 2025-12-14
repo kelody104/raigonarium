@@ -33,6 +33,9 @@ import { CommonActionService } from 'service/common-action.service';
 import { SpectatorService } from 'service/spectator.service';
 import { TowerHelper, releaseTower } from 'src/app/class/tower-helper';
 import { judgeTowerYaku } from 'src/app/raigo/yaku-judge';
+import { ChatMessageService } from 'service/chat-message.service';
+import { ChatTabList } from '@udonarium/chat-tab-list';
+import type { YakuResult } from 'src/app/raigo/yaku-judge';
 
 @Component({
   selector: 'card-stack',
@@ -120,6 +123,7 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
     private pointerDeviceService: PointerDeviceService,
     private commonActionService: CommonActionService,
     private spectatorService: SpectatorService,
+    private chatMessageService: ChatMessageService, 
   ) { }
 
   // 観戦モードフラグ
@@ -400,6 +404,64 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
     return actions;
   }
 
+  private getTowerPieceNames_(stack: CardStack): string[] {
+    const s: any = stack as any;
+
+    let cards: any[] = [];
+    if (Array.isArray(s.cards)) cards = s.cards;
+    else if (Array.isArray(s.cardList)) cards = s.cardList;
+    else if (typeof s.getCards === 'function') cards = s.getCards();
+    else if (Array.isArray(s.children)) cards = s.children;
+
+    const withZ = cards.map(c => ({
+      c,
+      z: (c as any).posZ ?? (c as any).location?.z
+    }));
+
+    // z が取れるなら下→上に揃える（judgeTowerYaku の意図に寄せる）
+    if (withZ.every(x => Number.isFinite(x.z))) {
+      withZ.sort((a, b) => a.z - b.z);
+    }
+
+    return withZ
+      .map(x => String(x.c?.name ?? '').trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
+  private postTowerReleaseChat_(playerName: string, yaku: YakuResult, komaNames: string[]): void {
+    const tabList = ChatTabList.instance;
+    if (!tabList || !tabList.chatTabs.length) return;
+
+    const gamelog =
+      tabList.chatTabs.find(t => t.name === '対戦ログ') ??
+      tabList.chatTabs[0];
+
+    if (!gamelog) return;
+
+    const total = (yaku.basePoint ?? 0) + (yaku.bonusPoint ?? 0);
+    const koma = komaNames.length ? komaNames.join('') : '';
+
+    const text = `${playerName} は、塔【${koma}】を解放した。\n役名：${yaku.yakuName}　得点：${total}`;
+
+    const fromId = PeerCursor.myCursor.identifier;
+
+    const msg = this.chatMessageService.sendMessage(
+      gamelog,
+      text,
+      'system',
+      fromId,
+      null
+    );
+
+    // 送信者アイコン固定（card.component.ts と同じ）:contentReference[oaicite:3]{index=3}
+    const my = PeerCursor.myCursor;
+    if (my && my.imageIdentifier) {
+      msg.imageIdentifier = my.imageIdentifier;
+      msg.update?.();
+    }
+  }
+
   private makeContextMenu(): ContextMenuAction[] {
     let actions: ContextMenuAction[] = [];
 
@@ -409,7 +471,11 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
       action: () => {
         try {
           const yaku = judgeTowerYaku(this.cardStack);
-          console.log('[塔を解放（テスト）] judgeTowerYaku =', yaku);
+          const playerName =
+            (PeerCursor.myCursor as any)?.name ??
+            (PeerCursor.myCursor as any)?.aliasName ??'プレイヤー';
+          const komaNames = this.getTowerPieceNames_(this.cardStack);
+          this.postTowerReleaseChat_(playerName, yaku, komaNames);
         } catch (err) {
           console.error('[塔を解放（テスト）] judgeTowerYaku error =', err);
         }

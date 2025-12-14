@@ -150,6 +150,7 @@ export class GameTableComponent implements OnInit, OnDestroy, AfterViewInit {
 
   initializeTableMouseGesture() {
     this.mouseGesture = new TableMouseGesture(this.rootElementRef.nativeElement);
+    this.mouseGesture.isViewFlipped = (Math.floor(this.viewRotateX / 180) % 2) === 1;
     this.mouseGesture.onstart = this.onTableMouseStart.bind(this);
     this.mouseGesture.onend = this.onTableMouseEnd.bind(this);
     this.mouseGesture.ontransform = this.onTableMouseTransform.bind(this);
@@ -278,6 +279,44 @@ export class GameTableComponent implements OnInit, OnDestroy, AfterViewInit {
     this.gridCanvas.nativeElement.style.opacity = opacity + '';
   }
 
+  @HostListener('window:keydown', ['$event'])
+  onWindowKeydown(e: KeyboardEvent) {
+    if (e.code !== 'Space') return;
+
+    const active = document.activeElement as HTMLElement | null;
+    const tag = active?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || active?.isContentEditable) return;
+
+    e.preventDefault();
+    if (e.ctrlKey) {
+      if (e.shiftKey) {
+        this.setViewAbs_(
+          -450,
+          -100,
+          -850,
+          25,   // rx: 真上（ここは環境で 90 / -90 を調整）
+          0,    // ry
+          -720     // rz
+        );
+        return;
+      }
+      // ★真上から（例）：回転Xを 90deg にして上から覗く
+      // ZやYは好み。いったん「今の位置は維持、回転だけ変える」なら x,y,z に現状値を入れる
+      this.setViewAbs_(
+        -450,
+        0,
+        -600,
+        0,   // rx: 真上（ここは環境で 90 / -90 を調整）
+        0,    // ry
+        0     // rz
+      );
+      return;
+    }
+
+    // CtrlなしSpaceは 180°回転（差分）
+    this.setTransform(0, 0, 0, 0, 0, 180);
+  }
+
   @HostListener('contextmenu', ['$event'])
   onContextMenu(e: any) {
     if (!document.activeElement.contains(this.gameObjects.nativeElement)) return;
@@ -334,6 +373,27 @@ export class GameTableComponent implements OnInit, OnDestroy, AfterViewInit {
     this.viewPotisonZ += transformZ;
 
     this.gameTable.nativeElement.style.transform = `translateZ(${this.viewPotisonZ.toFixed(4)}px) translateY(${this.viewPotisonY.toFixed(4)}px) translateX(${this.viewPotisonX.toFixed(4)}px) rotateY(${this.viewRotateY.toFixed(4)}deg) rotateX(${this.viewRotateX.toFixed(4) + 'deg) rotateZ(' + this.viewRotateZ.toFixed(4)}deg)`;
+  }
+
+  private setViewAbs_(
+    x: number, y: number, z: number,
+    rx: number, ry: number, rz: number
+  ) {
+    this.viewPotisonX = x;
+    this.viewPotisonY = y;
+    this.viewPotisonZ = z;
+    this.viewRotateX = rx;
+    this.viewRotateY = ry;
+    this.viewRotateZ = rz;
+
+    // 見た目に反映（setTransform内と同じ式）
+    this.gameTable.nativeElement.style.transform =
+      `translateZ(${this.viewPotisonZ.toFixed(4)}px) translateY(${this.viewPotisonY.toFixed(4)}px) translateX(${this.viewPotisonX.toFixed(4)}px) rotateY(${this.viewRotateY.toFixed(4)}deg) rotateX(${this.viewRotateX.toFixed(4)}deg) rotateZ(${this.viewRotateZ.toFixed(4)}deg)`;
+
+    // ドラッグ方向補正も同期
+    if (this.mouseGesture) {
+      this.mouseGesture.isViewFlipped = (Math.floor(this.viewRotateX / 180) % 2) === 1;
+    }
   }
 
   private setGameTableGrid(width: number, height: number, gridSize: number = 50, gridType: GridType = GridType.SQUARE, gridColor: string = '#000000e6') {

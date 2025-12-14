@@ -33,6 +33,7 @@ export class TableMouseGesture {
   onstart: Callback = null;
   onend: Callback = null;
   ontransform: OnTransformCallback = null;
+  isViewFlipped = false; // ★追加（180°回転時 true）
 
   constructor(readonly targetElement: HTMLElement) {
     this.initialize();
@@ -71,6 +72,11 @@ export class TableMouseGesture {
     let y = this.input.pointer.y;
     let deltaX = x - this.currentPositionX;
     let deltaY = y - this.currentPositionY;
+
+    if (this.isViewFlipped) {
+      deltaX *= -1;
+      deltaY *= -1;
+    }
 
     let transformX = 0;
     let transformY = 0;

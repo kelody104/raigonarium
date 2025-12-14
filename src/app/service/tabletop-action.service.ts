@@ -189,7 +189,7 @@ export class TabletopActionService {
 
   makeDefaultTabletopObjects() {
     // 隠駒(ongoma)を固定配置（ここにチェスクロックも格納）
-    this.createRaigoOngoma();
+    //this.createRaigoOngoma();
   }
 
   // ========= 隠駒(ongoma) =========

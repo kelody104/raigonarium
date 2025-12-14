@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewContainerRef, HostListener } from '@angular/core';
 
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { AudioPlayer } from '@udonarium/core/file-storage/audio-player';
@@ -46,6 +46,8 @@ import raijin from 'json/raijin/raijin.json';
 import { Piece } from 'models/piece';
 import { GameConfigService } from 'service/game-config.service';
 import { RaizanSetupService } from 'service/raizan-setup.service';  // ★これを追加
+import { GameTable } from './class/game-table';
+import { GameTableComponent } from './component/game-table/game-table.component';
 
 @Component({
   selector: 'app-root',
@@ -67,6 +69,11 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
   otonashiPieces: Piece[] = [];
   kotodamaPieces: Piece[] = [];
   ougiPieces: Piece[] = [];
+
+  isViewRotated = false;
+  viewRotateX = 0;
+  viewRotateY = 0;
+  viewRotateZ = 0;
 
   constructor(
     private modalService: ModalService,

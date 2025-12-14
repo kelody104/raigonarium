@@ -59,7 +59,7 @@
           </div>
 
           <div class="piece-item" *ngFor="let piece of kotodamaPieces">
-            <img class="piece-img" (click)="Createkoma(piece)"
+            <img class="piece-img"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
             <!--<div class="piece-name">{{ piece.name }}</div>-->
@@ -99,7 +99,7 @@
           <button type="button"
                   class="ougi-button"
                   *ngFor="let piece of filteredOugiPieces"
-                  (click)="Createkoma(piece)">
+                  (click)="toggleOugi(piece)">
             <!--toggleOugi(piece)-->
             <img class="piece-img"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"

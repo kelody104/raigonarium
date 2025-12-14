@@ -70,6 +70,7 @@ export class RaizanSettingsModalComponent implements OnInit {
 
   /** 「雷山生成」ボタン */
   onClickSave(): void {
+    this.tabletopActionService.createRaigoOngoma();
     let ougiForDeck: Piece[];
 
     if (this.selectedBattleMode === '雷神戦モード') {
