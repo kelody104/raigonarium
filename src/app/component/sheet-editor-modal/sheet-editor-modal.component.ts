@@ -19,7 +19,8 @@ type OugiPiece = {
   id: number;
   name: string;
   enabled?: boolean;
-  specialnum1: number;
+  specialnum1?: number;
+  specialboo1?: boolean;
 };
 
 type OugiGroup = {
@@ -83,10 +84,24 @@ export class SheetEditorModalComponent implements OnInit {
     }
   }
 
-  onToggleOugiClick(ev: MouseEvent, p: OugiPiece): void {
-    ev.preventDefault();
+  test() {
+    console.log("aaa");
+  }
+
+  debugOugi(p: OugiPiece, ev: Event): void {
+    console.log('debugOugi fired:', p.id, p.name);
     ev.stopPropagation();
     this.toggleOugi(p);
+  }
+
+  onToggleOugiClick(ev: MouseEvent, p: OugiPiece): void {
+    console.log("ggg");
+    ev.preventDefault();
+    ev.stopPropagation();
+    p.specialboo1 = !p.specialboo1;
+
+    // 差分検知対策（環境によって必要）
+    this.ougiPieces = [...this.ougiPieces];
   }
 
   async onClickSearch(): Promise<void> {
@@ -235,11 +250,9 @@ export class SheetEditorModalComponent implements OnInit {
   }
 
   get selectedOugiPowerSum(): number {
-    let sum = 0;
-    for (const p of this.ougiPieces) {
-      if (this.selectedOugiIds.has(p.id)) sum += Number(p.specialnum1 || 0);
-    }
-    return sum;
+    return this.ougiPieces
+      .filter(p => (p.enabled ?? true) && p.specialboo1)
+      .reduce((sum, p) => sum + (Number(p.specialnum1) || 0), 0);
   }
 
   isOugiSelected(p: OugiPiece): boolean {
@@ -247,11 +260,14 @@ export class SheetEditorModalComponent implements OnInit {
   }
 
   toggleOugi(p: OugiPiece): void {
-    if (this.selectedOugiIds.has(p.id)) this.selectedOugiIds.delete(p.id);
-    else this.selectedOugiIds.add(p.id);
+    if (!(p.enabled ?? true)) return;
+    p.specialboo1 = !p.specialboo1;
+    this.ougiPieces = [...this.ougiPieces]; // ★再描画を確実に
+  }
 
-    // ★差分検知を確実にする（環境や最適化設定でも効く）
-    this.selectedOugiIds = new Set(this.selectedOugiIds);
+
+  trackByOugiId(_: number, p: OugiPiece): number {
+    return p.id;
   }
 
   ougiImgSrc(p: OugiPiece): string {
@@ -280,6 +296,7 @@ export class SheetEditorModalComponent implements OnInit {
             name: String(x.name ?? ''),
             specialnum1: Number(x.specialnum1 ?? 0),
             enabled: x.enabled !== false,
+            specialboo1: Boolean(x.specialboo1),  // ★追加
           }))
           .filter(x => Number.isFinite(x.id) && x.id > 0 && x.name && Number.isFinite(x.specialnum1));
 

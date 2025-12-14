@@ -4,16 +4,19 @@
   z-index: 10000;
 }
 
+/* backdrop */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.60);
+  background: rgba(0,0,0,0.60);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* modal */
 .sheet-modal {
+  position: relative; /* overlay基準 */
   background: #fefefe;
   border-radius: 8px;
   padding: 16px;
@@ -21,22 +24,23 @@
   max-width: 1100px;
   height: 84vh;
   max-height: 84vh;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.40);
   display: flex;
   flex-direction: column;
 }
 
+/* header */
 .sheet-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
 
-  h2 {
+  .sheet-header h2 {
     margin: 0;
     font-size: 20px;
   }
-}
 
 .header-buttons {
   display: flex;
@@ -60,6 +64,11 @@ button.secondary {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .close-button {
   border: none;
   background: transparent;
@@ -67,69 +76,101 @@ button.secondary {
   cursor: pointer;
 }
 
+/* body 2 columns */
 .sheet-body {
   flex: 1;
-  overflow: hidden;
+  min-height: 0;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  overflow: hidden;
 }
 
-.top-row {
+.pane {
+  min-width: 0;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+  .pane.left {
+    flex: 0 0 38%;
+  }
+
+  .pane.right {
+    flex: 1 1 auto;
+  }
+
+/* search */
+.search-box {
+  height: 56px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #444;
+  min-width: 0;
+}
+
+.field-label {
+  font-size: 12px;
+  color: #444;
+}
+
+input, select {
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
 
   input[type="number"] {
     width: 90px;
-    margin-left: 6px;
   }
 
   input[type="text"] {
-    min-width: 260px;
-    margin-left: 6px;
-    padding: 2px 6px;
+    min-width: 160px;
   }
-}
 
 .hint {
   font-size: 12px;
   color: #666;
-}
-
-.hint2 {
-  font-size: 12px;
-  color: #666;
-  margin: 6px 0 10px;
+  align-self: center;
 }
 
 .error {
   color: #d32f2f;
   font-size: 13px;
+  margin-bottom: 6px;
 }
 
-.grid {
-  flex: 1;
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 12px;
-  min-height: 0; // ★見切れ防止
-}
-
-.left, .right {
-  overflow: hidden;
-  min-height: 0; // ★見切れ防止
-  display: flex;
-  flex-direction: column;
-}
-
+/* list / form panels */
 .list {
-  height: 100%;
-  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   border: 1px solid #ddd;
   border-radius: 6px;
+  background: #fff;
+}
+
+.form {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  background: #fff;
+  scrollbar-gutter: stable; /* ずれ防止（対応ブラウザのみ） */
 }
 
 .empty {
@@ -155,10 +196,6 @@ button.secondary {
   flex-wrap: wrap;
 }
 
-.name {
-  font-weight: 700;
-}
-
 .row-bottom {
   margin-top: 4px;
   font-size: 12px;
@@ -168,50 +205,40 @@ button.secondary {
   flex-wrap: wrap;
 }
 
+.name {
+  font-weight: 700;
+}
+
 .tname {
   color: #444;
-}
-
-.form-title {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.form {
-  flex: 1; // ★見切れ防止
-  min-height: 0; // ★見切れ防止
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 10px;
-  padding-bottom: 24px; // ★最下段保険
-
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 10px;
-    font-size: 12px;
-    color: #444;
-  }
-
-  input, select {
-    border: 1px solid #bbb;
-    border-radius: 4px;
-    padding: 4px 6px;
-  }
-}
-
-.items {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 10px;
 }
 
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* right title + top row */
+.form-title {
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.form-row3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+  margin: 0 0 8px;
+}
+
+/* items */
+.items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+/* ougi */
 .ougi-block {
   margin-top: 12px;
 }
@@ -225,31 +252,84 @@ button.secondary {
   margin: 8px 0 4px;
 }
 
+.ougi-scroll {
+  max-height: 55vh;
+  overflow: auto;
+  padding-right: 6px;
+  scrollbar-gutter: stable;
+}
+
 .ougi-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px; // 好みで
+  display: grid;
+  grid-template-columns: repeat(10, 48px);
+  gap: 6px;
+  align-items: start;
 }
 
 .ougi-item {
-  flex: 0 0 auto;
   cursor: pointer;
 }
-
-  .ougi-item.off .ougi-img {
-    filter: grayscale(100%);
-    opacity: 0.35;
-  }
-
-  .ougi-item.on .ougi-img {
-    filter: none;
-    opacity: 1;
-  }
 
 .ougi-img {
   width: 48px;
   height: 48px;
   object-fit: cover;
   display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+  /*pointer-events: none;*/ /* クリックはougi-itemへ */
 }
 
+.ougi-item.off .ougi-img {
+  filter: grayscale(100%);
+  opacity: 0.35;
+}
+
+.ougi-item.on .ougi-img {
+  filter: none;
+  opacity: 1;
+}
+
+/* loading overlay */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(200,200,200,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  border-radius: 8px;
+}
+
+.loading-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: rgba(0,0,0,0.6);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,12 +1,10 @@
 <div class="sheet-backdrop" (click)="onClickBackdrop()">
-  <div class="sheet-modal" (click)="$event.stopPropagation()">
+  <div class="sheet-modal" (click)="$event.stopPropagation()" [class.is-loading]="loading">
 
     <div class="sheet-header">
       <h2>大会エントリー</h2>
 
       <div class="header-buttons">
-        <div *ngIf="loading">ロード中...</div>
-        <!--        <button type="button" class="secondary" (click)="refreshTournaments()" [disabled]="loading">大会マスタ更新</button>-->
         <button type="button" class="secondary" (click)="onClickNew()" [disabled]="loading">新規</button>
         <button type="button" class="primary" (click)="onClickSave()" [disabled]="loading">
           保存（{{ edit.mode === 'append' ? '追加' : '更新' }}）
@@ -16,119 +14,125 @@
     </div>
 
     <div class="sheet-body">
-      <div class="top-row">
-        <label>
-          ID検索（完全一致）：
-          <input type="text" [(ngModel)]="filterId" placeholder="IDを入力（空なら0件）" />
-        </label>
+      <!-- 左：ID検索 + 検索結果 -->
+      <section class="pane left">
+        <div class="search-box">
+          <label class="field">
+            <span class="field-label">ID検索：</span>
+            <input type="text" [(ngModel)]="filterId" placeholder="IDを入力（空なら0件）" />
+          </label>
 
-        <label>
-          表示件数：
-          <input type="number" [(ngModel)]="limit" min="1" max="1000" />
-        </label>
+          <label class="field">
+            <span class="field-label">表示件数：</span>
+            <input type="number" [(ngModel)]="limit" min="1" max="1000" />
+          </label>
 
-        <button type="button" class="secondary" (click)="onClickSearch()" [disabled]="loading">検索</button>
+          <button type="button" class="secondary" (click)="onClickSearch()" [disabled]="loading">検索</button>
 
-        <span class="hint">IDは誰にも教えないでください。</span>
-      </div>
+          <!--<span class="hint">IDは誰にも教えないでください。</span>-->
+        </div>
 
-      <div class="error" *ngIf="error">{{ error }}</div>
+        <div class="error" *ngIf="error">{{ error }}</div>
 
-      <div class="grid">
-        <!-- 左：検索結果 -->
-        <div class="left">
-          <div class="list">
-            <div class="empty" *ngIf="rows.length === 0">
-              IDを入力して「検索」を押してください
+        <div class="list">
+          <div class="empty" *ngIf="rows.length === 0">
+            IDを入力して「検索」を押してください
+          </div>
+
+          <div class="row" *ngFor="let r of rows" (click)="selectRow(r)">
+            <div class="row-top">
+              <span class="mono">#{{ r.rowNumber }}</span>
+              <span class="mono">ID: {{ r.playerId }}</span>
+              <span class="name">{{ r.playerName }}</span>
             </div>
-
-            <div class="row" *ngFor="let r of rows" (click)="selectRow(r)">
-              <div class="row-top">
-                <span class="mono">#{{ r.rowNumber }}</span>
-                <span class="mono">ID: {{ r.playerId }}</span>
-                <span class="name">{{ r.playerName }}</span>
-              </div>
-              <div class="row-bottom">
-                <span class="mono">{{ r.tournamentId }}</span>
-                <span class="tname">{{ tournamentNameOf(r.tournamentId) }}</span>
-              </div>
+            <div class="row-bottom">
+              <span class="mono">{{ r.tournamentId }}</span>
+              <span class="tname">{{ tournamentNameOf(r.tournamentId) }}</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <!-- 右：編集 -->
-        <div class="right">
-          <div class="form-title">
-            <span *ngIf="edit.mode==='append'">新規追加</span>
-            <span *ngIf="edit.mode==='update'">更新</span>
+      <!-- 右：新規追加 / 更新 -->
+      <section class="pane right">
+        <div class="form-title">
+          <!--<span *ngIf="edit.mode==='append'">新規追加</span>-->
+          <span *ngIf="edit.mode==='update'">更新</span>
+        </div>
+
+        <div class="form-row3">
+          <label class="field">
+            <span class="field-label">大会名：</span>
+            <select [(ngModel)]="edit.tournamentId" (ngModelChange)="onTournamentChanged()">
+              <option value="">-- 選択してください --</option>
+              <option *ngFor="let t of tournaments" [value]="t.tournamentId">
+                {{ t.tournamentName }}
+              </option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">ID：</span>
+            <input type="text" [(ngModel)]="edit.playerId" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">雷名：</span>
+            <input type="text" [(ngModel)]="edit.playerName" />
+          </label>
+        </div>
+
+        <div class="form">
+          <div class="items" *ngIf="selectedTournament">
+            <div class="item" *ngFor="let i of visibleItemIndices; trackBy: trackByIndex">
+              <label class="field">
+                <span class="field-label">{{ labelOf(i) }}</span>
+                <input type="text"
+                       [(ngModel)]="edit.items[i]"
+                       [ngModelOptions]="{ standalone: true }"
+                       [name]="'item' + i" />
+              </label>
+            </div>
           </div>
 
-          <div class="form">
+          <div class="ougi-block" *ngIf="selectedTournament">
+            <div class="ougi-sum">選択中の陽力合計：{{ selectedOugiPowerSum }}</div>
 
-            <label>
-              大会名（必須）
-              <select [(ngModel)]="edit.tournamentId" (ngModelChange)="onTournamentChanged()">
-                <option value="">-- 選択してください --</option>
-                <option *ngFor="let t of tournaments" [value]="t.tournamentId">
-                  <!--                  {{ t.tournamentName }}（{{ t.tournamentId }}）-->
-                  {{ t.tournamentName }}
-                </option>
-              </select>
-            </label>
+            <div class="ougi-scroll">
+              <ng-container *ngFor="let g of ougiGroups; let last = last">
+                <div class="ougi-title">【陽力{{ g.power }}】</div>
 
-            <label>
-              ID（必須）
-              <input type="text" [(ngModel)]="edit.playerId" />
-            </label>
-
-            <label>
-              プレイヤー名（必須）
-              <input type="text" [(ngModel)]="edit.playerName" />
-            </label>
-            </div>
-
-            <div class="form">
-              <div class="items" *ngIf="selectedTournament">
-                <div class="item"
-                     *ngFor="let i of visibleItemIndices; trackBy: trackByIndex">
-                  <label>
-                    {{ labelOf(i) }}
-                    <input type="text"
-                           [(ngModel)]="edit.items[i]"
-                           [ngModelOptions]="{ standalone: true }"
-                           [name]="'item' + i">
-                  </label>
-                </div>
-                <div class="ougi-block" *ngIf="selectedTournament">
-                  <div class="ougi-sum">選択中の陽力合計：{{ selectedOugiPowerSum }}</div>
-
-                  <div class="ougi-scroll">
-                    <ng-container *ngFor="let g of ougiGroups; let last = last">
-                      <div class="ougi-title">【陽力{{ g.power }}】</div>
-
-                      <div class="ougi-grid">
-                        <div class="ougi-item"
-                             *ngFor="let p of g.pieces"
-                             (click)="onToggleOugiClick($event, p)"
-                             [class.off]="!isOugiSelected(p)"
-                             [class.on]="isOugiSelected(p)">
-                          <img class="ougi-img"
-                               [src]="ougiImgSrc(p)"
-                               [alt]="p.name"
-                               [title]="p.name" />
-                        </div>
-                      </div>
-
-                      <hr *ngIf="!last">
-                    </ng-container>
+                <div class="ougi-grid">
+                  <div class="ougi-item"
+                       *ngFor="let p of g.pieces; trackBy: trackByOugiId"
+                       (pointerdown)="toggleOugi(p); $event.preventDefault(); $event.stopPropagation();"
+                       tabindex="0"
+                       role="button"
+                       [attr.aria-pressed]="p.specialboo1"
+                       [class.off]="!p.specialboo1"
+                       [class.on]="p.specialboo1">
+                    <img class="ougi-img"
+                         [src]="ougiImgSrc(p)"
+                         [alt]="p.name"
+                         [title]="p.name"
+                         draggable="false" />
                   </div>
                 </div>
-              </div>
 
+                <hr *ngIf="!last">
+              </ng-container>
             </div>
           </div>
-
         </div>
+      </section>
+    </div>
+
+    <!-- ロード中オーバーレイ -->
+    <div class="loading-overlay" *ngIf="loading" aria-live="polite" aria-busy="true">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <div class="loading-text">Now Loading...</div>
+      </div>
     </div>
 
   </div>
