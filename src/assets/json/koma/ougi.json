@@ -12,9 +12,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 51,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -30,9 +30,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -48,9 +48,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -66,9 +66,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -84,9 +84,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -102,9 +102,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -120,9 +120,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -138,9 +138,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -156,9 +156,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -174,9 +174,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -192,9 +192,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -210,9 +210,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -228,9 +228,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -246,9 +246,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -264,9 +264,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -282,9 +282,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -300,9 +300,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -318,9 +318,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -336,9 +336,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -354,9 +354,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 51,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -372,9 +372,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -390,9 +390,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -408,9 +408,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -426,9 +426,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -444,9 +444,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -462,9 +462,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -480,9 +480,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -498,9 +498,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -516,9 +516,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -534,9 +534,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -552,9 +552,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 15,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -570,9 +570,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -588,9 +588,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 17,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -608,7 +608,7 @@
     "specialstr2": null,
     "specialnum1": null,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -624,9 +624,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 34,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -642,9 +642,9 @@
     "enabled": true,
     "specialstr1": null,
     "specialstr2": null,
-    "specialnum1": null,
+    "specialnum1": 51,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": true,
     "specialboo2": null
   },
   {
@@ -662,7 +662,7 @@
     "specialstr2": null,
     "specialnum1": null,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": false,
     "specialboo2": null
   },
   {
@@ -680,7 +680,7 @@
     "specialstr2": null,
     "specialnum1": null,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": false,
     "specialboo2": null
   },
   {
@@ -698,7 +698,7 @@
     "specialstr2": null,
     "specialnum1": null,
     "specialnum2": null,
-    "specialboo1": null,
+    "specialboo1": false,
     "specialboo2": null
   }
 ]

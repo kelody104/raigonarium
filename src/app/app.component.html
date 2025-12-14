@@ -32,10 +32,10 @@
         </a>
       </li>
 
-      <li>
+      <li (click)="openSheetEditor()">
         <a>
           <div><i class="fas fa-clipboard"></i></div>
-          <div>結果報告</div>
+          <div>大会エントリー</div>
         </a>
       </li>
 
@@ -99,5 +99,8 @@
                            (save)="onraizanSettingsSave($event)"
                            (placeToTsuki)="onPlaceOugiToTsuki($event)"
                            (close)="closeRaizanSettings()"></app-raizan-settings-modal>
+<app-sheet-editor-modal *ngIf="showSheetEditor"
+                        (close)="closeSheetEditor()">
+</app-sheet-editor-modal>
 
 <network-indicator class="networkIndicator"></network-indicator>

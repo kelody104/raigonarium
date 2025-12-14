@@ -42,6 +42,8 @@ import { TextNoteComponent } from 'component/text-note/text-note.component';
 import { TextViewComponent } from 'component/text-view/text-view.component';
 import { UIPanelComponent } from 'component/ui-panel/ui-panel.component';
 import { TournamentRoomSettingComponent } from './component/tournament-room-setting/tournament-room-setting.component';
+import { SheetEditorModalComponent } from 'component/sheet-editor-modal/sheet-editor-modal.component';
+
 import { DraggableDirective } from 'directive/draggable.directive';
 import { MovableDirective } from 'directive/movable.directive';
 import { ResizableDirective } from 'directive/resizable.directive';
@@ -106,6 +108,7 @@ import { AppComponent } from './app.component';
     ResizableDirective,
     ChatInputComponent,
     TournamentRoomSettingComponent,
+    SheetEditorModalComponent,
   ],
   imports: [
     BrowserModule,

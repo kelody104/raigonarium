@@ -62,6 +62,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
   progresPercent: number = 0;
   // フィールド
   showRaizanSettings = false;
+  showSheetEditor = false; // ★追加（スプレッドシート操作モーダル）
 
   otonashiPieces: Piece[] = [];
   kotodamaPieces: Piece[] = [];
@@ -340,6 +341,16 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
   closeRaizanSettings() {
     this.showRaizanSettings = false;
   }
+
+  // ★追加：結果報告（シート操作）モーダル
+  openSheetEditor() {
+    this.showSheetEditor = true;
+  }
+
+  closeSheetEditor() {        // ★これを追加
+    this.showSheetEditor = false;
+  }
+
   onraizanSettingsSave(event: {
     otonashi: Piece[];
     kotodama: Piece[];

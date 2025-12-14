@@ -408,9 +408,7 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
       name: '塔を解放（テスト）',
       action: () => {
         try {
-          //{ yakuName: 'None', yakuType: '役無し', basePoint: 0, bonusPoint: 0 };
           const yaku = judgeTowerYaku(this.cardStack);
-          if (yaku.basePoint > 0)
           console.log('[塔を解放（テスト）] judgeTowerYaku =', yaku);
         } catch (err) {
           console.error('[塔を解放（テスト）] judgeTowerYaku error =', err);

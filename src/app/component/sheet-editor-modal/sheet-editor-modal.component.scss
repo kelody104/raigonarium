@@ -1,0 +1,255 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.60);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-modal {
+  background: #fefefe;
+  border-radius: 8px;
+  padding: 16px;
+  width: 92%;
+  max-width: 1100px;
+  height: 84vh;
+  max-height: 84vh;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+  display: flex;
+  flex-direction: column;
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+button.primary {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ffb74d;
+  cursor: pointer;
+}
+
+button.secondary {
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.close-button {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.sheet-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  input[type="number"] {
+    width: 90px;
+    margin-left: 6px;
+  }
+
+  input[type="text"] {
+    min-width: 260px;
+    margin-left: 6px;
+    padding: 2px 6px;
+  }
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+}
+
+.hint2 {
+  font-size: 12px;
+  color: #666;
+  margin: 6px 0 10px;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 13px;
+}
+
+.grid {
+  flex: 1;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 12px;
+  min-height: 0; // ★見切れ防止
+}
+
+.left, .right {
+  overflow: hidden;
+  min-height: 0; // ★見切れ防止
+  display: flex;
+  flex-direction: column;
+}
+
+.list {
+  height: 100%;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.empty {
+  padding: 10px;
+  font-size: 13px;
+  color: #666;
+}
+
+.row {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+  .row:hover {
+    background: #fafafa;
+  }
+
+.row-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.row-bottom {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tname {
+  color: #444;
+}
+
+.form-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.form {
+  flex: 1; // ★見切れ防止
+  min-height: 0; // ★見切れ防止
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  padding-bottom: 24px; // ★最下段保険
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #444;
+  }
+
+  input, select {
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 4px 6px;
+  }
+}
+
+.items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.ougi-block {
+  margin-top: 12px;
+}
+
+.ougi-sum {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ougi-title {
+  margin: 8px 0 4px;
+}
+
+.ougi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; // 好みで
+}
+
+.ougi-item {
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+  .ougi-item.off .ougi-img {
+    filter: grayscale(100%);
+    opacity: 0.35;
+  }
+
+  .ougi-item.on .ougi-img {
+    filter: none;
+    opacity: 1;
+  }
+
+.ougi-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  display: block;
+}
+
