@@ -31,9 +31,6 @@
 
           <!--<span class="hint">IDは誰にも教えないでください。</span>-->
         </div>
-
-        <div class="error" *ngIf="error">{{ error }}</div>
-
         <div class="list">
           <div class="empty" *ngIf="rows.length === 0">
             参加者IDを入力して「検索」を押してください
@@ -96,8 +93,7 @@
           </div>
 
           <div class="ougi-block" *ngIf="selectedTournament">
-            <div class="ougi-sum">選択中の陽力合計：{{ selectedOugiPowerSum }}</div>
-
+            <div class="ougi-sum">選択中の陽力合計：<span [class.power-over]="selectedOugiPowerSum >= 100">{{ selectedOugiPowerSum }}</span>/100　<span class="error" *ngIf="error">{{ error }}</span></div>
             <div class="ougi-scroll">
               <ng-container *ngFor="let g of ougiGroups; let last = last">
                 <div class="ougi-title">【陽力{{ g.power }}】</div>

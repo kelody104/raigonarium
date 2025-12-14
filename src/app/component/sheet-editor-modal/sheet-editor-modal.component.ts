@@ -141,6 +141,7 @@ export class SheetEditorModalComponent implements OnInit {
 
   onClickNew(): void {
     this.edit = this.newAppend_();
+    this.clearOugiSelection_();
   }
 
   selectRow(r: EntryRow): void {
@@ -153,12 +154,14 @@ export class SheetEditorModalComponent implements OnInit {
       entryTime: r.entryTime || '',
       items: this.ensure20_(r.items),
     };
+    this.syncOugiSelectionFromItems_(); // ←追加
   }
 
   onTournamentChanged(): void {
     // append時のみ：大会を変えたら入力欄をリセット（事故防止）
     if (this.edit.mode === 'append') {
       this.edit.items = Array.from({ length: 20 }, () => '');
+      this.clearOugiSelection_(); // ←追加
     }
   }
 
@@ -183,6 +186,52 @@ export class SheetEditorModalComponent implements OnInit {
   private isOugiFieldLabel_(label: string): boolean {
     const s = String(label || '').trim();
     return /^奥義\s*[1-6]$/.test(s);
+  }
+
+  private clearOugiSelection_(): void {
+    for (const p of this.ougiPieces) {
+      p.specialboo1 = false;
+    }
+    this.selectedOugiIds = new Set<number>();
+    this.ougiPieces = [...this.ougiPieces]; // 再描画
+  }
+
+  private syncOugiSelectionFromItems_(): void {
+    // いったん全解除
+    this.clearOugiSelection_();
+
+    const t = this.selectedTournament;
+    if (!t) return;
+
+    const labels = Array.isArray(t.labels) ? t.labels : [];
+
+    // 「奥義1〜6」になっている items の index を集める（順番も揃える）
+    const ougiIdx = Array.from({ length: 20 }, (_, i) => {
+      const label = String(labels[i] ?? '').trim();
+      const m = label.match(/^奥義\s*([1-6])$/);
+      return m ? { i, n: Number(m[1]) } : null;
+    })
+      .filter((x): x is { i: number; n: number } => x !== null)
+      .sort((a, b) => a.n - b.n)
+      .map(x => x.i);
+
+    // items[奥義index] に入っている駒名の集合
+    const names = new Set(
+      ougiIdx
+        .map(i => String(this.edit.items[i] ?? '').trim())
+        .filter(s => !!s)
+    );
+
+    // 駒名一致したものを選択状態に
+    for (const p of this.ougiPieces) {
+      if (!(p.enabled ?? true)) continue;
+      if (names.has(p.name)) {
+        p.specialboo1 = true;
+        this.selectedOugiIds.add(p.id); // （selectedOugiIds を使ってる箇所が残ってても破綻しないように）
+      }
+    }
+
+    this.ougiPieces = [...this.ougiPieces]; // 再描画
   }
 
   labelOf(i: number): string {
@@ -225,7 +274,12 @@ export class SheetEditorModalComponent implements OnInit {
 
     this.loading = true;
     try {
+      if (this.selectedOugiPowerSum > 100) {
+        throw new Error('必要陽力が100を超えています。');
+      }
+
       if (this.edit.mode === 'append') {
+        // ★ここを追加：奥義名を items（奥義1-6）へ反映
         await this.sheetApi.appendEntry(tournamentId, playerId, playerName, items);
         const ok = window.confirm('大会エントリーが完了しました。\nあなたの参加者IDは【' + playerId + '】です。\nエントリー内容を変更する場合は、このIDが必要になります。\n忘れないようにメモしてください。');
         if (!ok) return;
@@ -233,7 +287,10 @@ export class SheetEditorModalComponent implements OnInit {
 
         this.edit = this.newAppend_();
       } else {
-        if (!this.edit.rowNumber) throw new Error('rowNumber がありません');
+        if (this.selectedOugiPowerSum > 100) {
+          throw new Error('必要陽力が100を超えています。');
+        }
+        this.applySelectedOugiToItems_(items);
         await this.sheetApi.updateEntry(this.edit.rowNumber, tournamentId, playerId, playerName, items, this.edit.entryTime || undefined);
       }
       // 直近の検索条件で再表示（空なら0件）
@@ -329,6 +386,45 @@ export class SheetEditorModalComponent implements OnInit {
 
     // 読めない場合はUIにだけ出す（既存の error 表示を流用）
     if (!this.error) this.error = 'ougi.json の読み込みに失敗しました（assets 配下に配置してください）';
+  }
+
+  private applySelectedOugiToItems_(items: string[]): void {
+    // 1) 選択中の奥義（specialboo1）を取得
+    const selected = (this.ougiPieces ?? [])
+      .filter(p => (p.enabled ?? true) && p.specialboo1)
+      // 並び順は安定させる（必要陽力→id）
+      .sort((a, b) => (Number(a.specialnum1) || 0) - (Number(b.specialnum1) || 0) || (a.id - b.id));
+
+    if (selected.length > 6) {
+      throw new Error('奥義は最大6つまで選択できます。');
+    }
+
+    const names = selected.map(p => p.name);
+
+    // 2) items内の「奥義1-6」がどのindexか探す（大会ラベルから）
+    const t = this.selectedTournament;
+    const labels = Array.isArray(t?.labels) ? t!.labels : [];
+
+    // idx[0] = 奥義1 の items index, idx[5] = 奥義6 の items index
+    const idx: number[] = Array.from({ length: 6 }, () => -1);
+
+    for (let i = 0; i < labels.length; i++) {
+      const m = /^奥義\s*([1-6])$/.exec(String(labels[i] ?? '').trim());
+      if (!m) continue;
+      const n = Number(m[1]); // 1..6
+      idx[n - 1] = i;
+    }
+
+    // 3) ラベルが無い大会の保険：先頭6項目に入れる
+    const useFallback = idx.every(v => v < 0);
+    const targetIdx = useFallback ? [0, 1, 2, 3, 4, 5] : idx;
+
+    // 4) 代入（足りない分は空文字）
+    for (let k = 0; k < 6; k++) {
+      const i = targetIdx[k];
+      if (i < 0) continue; // 奥義3だけ無い、などの大会でも落ちないように
+      items[i] = names[k] ?? '';
+    }
   }
 
   private ensure20_(items: any): string[] {

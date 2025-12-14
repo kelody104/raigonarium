@@ -328,6 +328,11 @@ input, select {
   animation: spin 0.9s linear infinite;
 }
 
+.power-over {
+  color: #d32f2f;
+  font-weight: 700;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
