@@ -7,7 +7,7 @@
       <div class="header-buttons">
         <button type="button" class="secondary" (click)="onClickNew()" [disabled]="loading">新規</button>
         <button type="button" class="primary" (click)="onClickSave()" [disabled]="loading">
-          保存（{{ edit.mode === 'append' ? '追加' : '更新' }}）
+          {{ edit.mode === 'append' ? '登録' : '更新' }}
         </button>
         <button type="button" class="close-button" (click)="onClickClose()">×</button>
       </div>

@@ -18,6 +18,12 @@
         </a>
       </li>
 
+      <li (click)="openSheetEditor()" title="大会エントリー" aria-label="大会エントリー">
+        <a>
+          <div><i class="fa-solid fa-torii-gate torii-icon"></i></div>
+        </a>
+      </li>
+
       <li title="チャット" aria-label="チャット">
         <a (click)="open('ChatWindowComponent')">
           <div class="menu-icon-with-badge">
@@ -29,11 +35,7 @@
         </a>
       </li>
 
-      <li (click)="openSheetEditor()" title="大会エントリー" aria-label="大会エントリー">
-        <a>
-          <div><i class="fas fa-clipboard"></i></div>
-        </a>
-      </li>
+
 
       <!-- ★チェスクロック -->
       <li title="時計を操作する" aria-label="時計を操作する">

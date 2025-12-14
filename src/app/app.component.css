@@ -51,6 +51,11 @@ nav ul {
     text-decoration: none;
   }
 
+  nav ul i.torii-icon,
+  nav ul i.torii-icon::before {
+    color: #e53935 !important;
+  }
+
 /* 既存（使ってるなら残す） */
 .icon-size {
   font-size: 10px;
