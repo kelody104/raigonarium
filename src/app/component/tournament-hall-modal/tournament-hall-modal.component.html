@@ -1,0 +1,42 @@
+<div class="overlay" *ngIf="isOpen" (click)="onCancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="header">
+      <div class="title">大会会場</div>
+      <button class="x" (click)="onCancel()">×</button>
+    </div>
+
+    <div class="body">
+      <div class="row">
+        <label>大会名</label>
+        <select [(ngModel)]="selected" [ngModelOptions]="{standalone: true}">
+          <option *ngFor="let t of tournaments" [ngValue]="t">{{ t.name }}</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>入場種別</label>
+        <div class="seg">
+          <button [class.on]="mode==='PLAYER'" (click)="mode='PLAYER'">参加者</button>
+          <button [class.on]="mode==='WATCHER'" (click)="mode='WATCHER'">観戦者</button>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="mode==='PLAYER'">
+        <label>参加者ID</label>
+        <input type="text"
+               [(ngModel)]="entryId"
+               [ngModelOptions]="{standalone: true}"
+               placeholder="sheet-editorで発行されたID" />
+      </div>
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+    </div>
+
+    <div class="footer">
+      <button class="btn" (click)="onCancel()">閉じる</button>
+      <button class="btn primary" (click)="enter()" [disabled]="loading">
+        {{ loading ? '処理中…' : '入場' }}
+      </button>
+    </div>
+  </div>
+</div>

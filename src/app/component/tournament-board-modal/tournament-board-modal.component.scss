@@ -1,0 +1,164 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
+.modal {
+  width: min(1200px, 96vw);
+  height: min(88vh, 900px);
+  background: #111;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  color: #eee;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.x {
+  background: transparent;
+  border: 0;
+  color: #ddd;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.body {
+  padding: 12px;
+  overflow: auto;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pane {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  background: #141414;
+  padding: 10px;
+}
+
+.paneTitle {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.round {
+  margin-bottom: 14px;
+}
+
+.roundTitle {
+  font-weight: 700;
+  color: rgba(255,255,255,.75);
+  margin: 6px 0;
+}
+
+.card {
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  background: #181818;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.table {
+  font-weight: 700;
+}
+
+.result {
+  color: rgba(255,255,255,.75);
+}
+
+.small {
+  font-size: 12px;
+  color: rgba(255,255,255,.6);
+  margin-left: 6px;
+}
+
+.players {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.player {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.okugi {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.12);
+  object-fit: cover;
+}
+
+.name {
+  font-weight: 700;
+}
+
+.wins {
+  font-size: 12px;
+  color: rgba(255,255,255,.7);
+}
+
+.vs {
+  color: rgba(255,255,255,.6);
+  font-weight: 700;
+}
+
+.actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  background: #1b1b1b;
+  border: 1px solid rgba(255,255,255,.12);
+  color: #eee;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.error {
+  color: #ffaaaa;
+  margin-bottom: 10px;
+}
+
+.loading {
+  color: rgba(255,255,255,.7);
+}

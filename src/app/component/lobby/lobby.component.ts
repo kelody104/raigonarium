@@ -13,6 +13,7 @@ import { PeerContext } from '@udonarium/core/system/network/peer-context';
 import { PeerSessionGrade } from '@udonarium/core/system/network/peer-session-state';
 import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
 import { AppConfig, AppConfigService } from 'service/app-config.service';
+import { Tournament, Entry } from 'src/app/models/tournament-models';
 
 @Component({
   selector: 'lobby',
@@ -32,6 +33,13 @@ export class LobbyComponent implements OnInit, OnDestroy {
   gameRoomService = ObjectStore.instance;
   helpPeer: string = '';
   isPasswordVisible = false;
+
+  // 追加プロパティ（大会）
+  isTournamentHallOpen = false;
+  isTournamentBoardOpen = false;
+  selectedTournament?: Tournament;
+  enterMode: 'PLAYER' | 'WATCHER' = 'WATCHER';
+  enteredEntry?: Entry;
 
   get currentRoom(): string { return Network.peer.roomId };
   get peerId(): string { return Network.peerId; }
@@ -211,5 +219,32 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (peer.isRoom) return;
     ObjectStore.instance.clearDeleteHistory();
     Network.connect(peer);
+  }
+
+  //===============大会情報==================
+  // 追加メソッド
+  openTournamentHall() {
+    this.isTournamentHallOpen = true;
+    // 開いた瞬間に一覧ロードさせるためのhook（*ngIf生成後に呼ぶのが確実）
+    setTimeout(() => (this as any).tournamentHall?.onOpen?.(), 0);
+  }
+
+  onTournamentHallClose() {
+    this.isTournamentHallOpen = false;
+  }
+
+  onEntered(ev: { tournament: Tournament; mode: 'PLAYER' | 'WATCHER'; entry?: Entry }) {
+    this.isTournamentHallOpen = false;
+
+    this.selectedTournament = ev.tournament;
+    this.enterMode = ev.mode;
+    this.enteredEntry = ev.entry;
+
+    this.isTournamentBoardOpen = true;
+    setTimeout(() => (this as any).tournamentBoard?.onOpen?.(), 0);
+  }
+
+  onTournamentBoardClose() {
+    this.isTournamentBoardOpen = false;
   }
 }

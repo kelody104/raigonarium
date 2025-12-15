@@ -43,6 +43,8 @@ import { TextViewComponent } from 'component/text-view/text-view.component';
 import { UIPanelComponent } from 'component/ui-panel/ui-panel.component';
 import { TournamentRoomSettingComponent } from './component/tournament-room-setting/tournament-room-setting.component';
 import { SheetEditorModalComponent } from 'component/sheet-editor-modal/sheet-editor-modal.component';
+import { TournamentHallModalComponent } from './component/tournament-hall-modal/tournament-hall-modal.component';
+import { TournamentBoardModalComponent } from './component/tournament-board-modal/tournament-board-modal.component';
 
 import { DraggableDirective } from 'directive/draggable.directive';
 import { MovableDirective } from 'directive/movable.directive';
@@ -109,6 +111,8 @@ import { AppComponent } from './app.component';
     ChatInputComponent,
     TournamentRoomSettingComponent,
     SheetEditorModalComponent,
+    TournamentHallModalComponent,
+    TournamentBoardModalComponent,
   ],
   imports: [
     BrowserModule,
