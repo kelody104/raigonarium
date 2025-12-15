@@ -16,7 +16,7 @@ export class TournamentHallModalComponent {
   @Output() entered = new EventEmitter<{
     tournament: Tournament;
     mode: EnterMode;
-    entry?: Entry; // PLAYERの場合のみ
+    entry?: Entry;
   }>();
 
   tournaments: Tournament[] = [];
@@ -25,7 +25,6 @@ export class TournamentHallModalComponent {
   mode: EnterMode = 'WATCHER';
   entryId = '';
   error = '';
-
   loading = false;
 
   constructor(private sheet: TournamentSheetService) { }
@@ -37,7 +36,7 @@ export class TournamentHallModalComponent {
     try {
       this.tournaments = await this.sheet.getTournaments();
       this.selected = this.tournaments[0];
-    } catch (e) {
+    } catch {
       this.error = '大会一覧の取得に失敗しました。';
     } finally {
       this.loading = false;
@@ -57,7 +56,6 @@ export class TournamentHallModalComponent {
       return;
     }
 
-    // PLAYER
     const id = this.entryId.trim();
     if (!id) {
       this.error = '参加者IDを入力してください。';
@@ -72,7 +70,7 @@ export class TournamentHallModalComponent {
         return;
       }
       this.entered.emit({ tournament: this.selected, mode: 'PLAYER', entry });
-    } catch (e) {
+    } catch {
       this.error = '参加者IDの照合に失敗しました。';
     } finally {
       this.loading = false;

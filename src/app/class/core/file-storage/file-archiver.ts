@@ -163,6 +163,41 @@ export class FileArchiver {
 
     saveAs(await zipWriter.close(), zipName + '.zip');
   }
+
+  async buildBlobAsync(
+    files: File[] | FileList,
+    zipName: string,
+    updateCallback?: UpdateCallback
+  ): Promise<Blob> {
+    if (!files) throw new Error('No files');
+
+    const saveFiles: File[] =
+      files instanceof FileList ? toArrayOfFileList(files) : files;
+
+    const zipWriter = new ZipWriter(
+      new BlobWriter('application/zip'),
+      { bufferedWrite: true }
+    );
+
+    let sumProgress = 0;
+    let sumTotal = 0;
+
+    await Promise.all(saveFiles.map(async file => {
+      let prevProgress = 0;
+      sumTotal += file.size;
+
+      await zipWriter.add(file.name, new BlobReader(file), {
+        async onprogress(progress, _total) {
+          sumProgress += progress - prevProgress;
+          prevProgress = progress;
+          const percent = sumProgress * 100 / sumTotal;
+          updateCallback?.({ percent, currentFile: file.name });
+        }
+      });
+    }));
+
+    return await zipWriter.close(); // ★ saveAs しない
+  }
 }
 
 function toArrayOfFileList(fileList: FileList): File[] {

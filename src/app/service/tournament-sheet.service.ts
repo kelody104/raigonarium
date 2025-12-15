@@ -1,57 +1,107 @@
 import { Injectable } from '@angular/core';
-import { BracketMatch, Entry, SwissMatch, Tournament } from '../models/tournament-models';
+import { SheetApiService } from './sheet-api.service';
+import { BracketMatch, Entry, MatchResult, SwissMatch, Tournament } from '../models/tournament-models';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentSheetService {
-  // TODO: ここを既存の Sheet API（GAS等）に置き換える
+  constructor(private api: SheetApiService) { }
 
   async getTournaments(): Promise<Tournament[]> {
-    return [
-      {
-        tournamentId: 't001',
-        name: 'テスト大会',
-        status: 'RUNNING',
-        swissMaxRounds: 5,
-        topCut: 8,
-        bracketMaxRounds: 4,
-        item1: 'item1',
-      },
-    ];
+    const masters = await this.api.listTournaments();
+    // NOTE: いまの tournaments API は swissMaxRounds 等を返してないので、まずは既定値で埋める
+    return masters.map((m) => ({
+      tournamentId: m.tournamentId,
+      name: m.tournamentName,
+      swissMaxRounds: 5,
+      topCut: 8,
+      bracketMaxRounds: 4,
+      // item1..20 相当は、必要になったら models 側に持たせる or 別返却に
+    })) as Tournament[];
   }
 
   async getEntries(tournamentId: string): Promise<Entry[]> {
-    return [
-      { entryId: 'e1', tournamentId, playerId: 'p01', playerName: 'プレイヤー1', role: 'PLAYER', active: true, okugiPieceId: 'okg_01' },
-      { entryId: 'e2', tournamentId, playerId: 'p02', playerName: 'プレイヤー2', role: 'PLAYER', active: true, okugiPieceId: 'okg_02' },
-      { entryId: 'e3', tournamentId, playerId: 'p03', playerName: 'プレイヤー3', role: 'PLAYER', active: true, okugiPieceId: 'okg_03' },
-      { entryId: 'e4', tournamentId, playerId: 'p04', playerName: 'プレイヤー4', role: 'PLAYER', active: true, okugiPieceId: 'okg_04' },
-    ];
+    const rows = await this.api.listEntriesByTournamentId(tournamentId);
+
+    return rows.map((r) => ({
+      entryId: r.playerId,          // “参加者ID”として使う想定（必要なら後で変更）
+      tournamentId: r.tournamentId,
+      playerId: r.playerId,
+      playerName: r.playerName,
+      role: 'PLAYER',
+      active: true,
+     ougiPieceId: undefined,      // 今回は空欄でOK
+      // items は必要なら保持
+      items: r.items,
+    })) as any;
   }
 
   async getEntryById(tournamentId: string, entryId: string): Promise<Entry | undefined> {
-    const list = await this.getEntries(tournamentId);
-    return list.find(e => e.entryId === entryId);
+    const r = await this.api.getEntryById(tournamentId, entryId);
+    if (!r) return undefined;
+
+    return {
+      entryId: r.playerId,
+      tournamentId: r.tournamentId,
+      playerId: r.playerId,
+      playerName: r.playerName,
+      role: 'PLAYER',
+      active: true,
+     ougiPieceId: undefined,
+      items: r.items,
+    } as any;
   }
 
   async getSwissMatches(tournamentId: string): Promise<SwissMatch[]> {
-    return [
-      { matchId: 'sm1', tournamentId, round: 1, tableName: 'A-1', p1Id: 'p01', p2Id: 'p02', p1Wins: 0, p2Wins: 0, result: 'NONE' },
-      { matchId: 'sm2', tournamentId, round: 1, tableName: 'A-2', p1Id: 'p03', p2Id: 'p04', p1Wins: 1, p2Wins: 0, result: 'P1', logZipUrl: 'https://example.com/log.zip' },
-    ];
+    const rows = await this.api.listSwissMatches(tournamentId);
+    return rows.map((r) => ({
+      matchId: r.matchId,
+      tournamentId: r.tournamentId,
+      round: r.round,
+      tableName: r.tableName,
+      p1Id: r.p1Id,
+      p2Id: r.p2Id,
+      p1Wins: r.p1Wins,
+      p2Wins: r.p2Wins,
+      result: this.toResult(r.result),
+      logZipUrl: r.logZipUrl,
+    }));
   }
 
   async getBracketMatches(tournamentId: string): Promise<BracketMatch[]> {
-    return [
-      { matchId: 'bm1', tournamentId, round: 1, tableName: 'F-1', bestOf: 1, p1Id: 'p01', p2Id: 'p04', result: 'NONE' },
-      {
-        matchId: 'bmF', tournamentId, round: 4, tableName: 'FINAL', bestOf: 3,
-        p1Id: 'p02', p2Id: 'p03',
-        p1GameWins: 1, p2GameWins: 0,
-        game1Result: 'P1', game1LogZipUrl: 'https://example.com/g1.zip',
-        game2Result: 'NONE',
-        game3Result: 'NONE',
-        result: 'NONE',
-      },
-    ];
+    const rows = await this.api.listBracketMatches(tournamentId);
+    return rows.map((r) => ({
+      matchId: r.matchId,
+      tournamentId: r.tournamentId,
+      round: r.round,
+      tableName: r.tableName,
+      bestOf: (r.bestOf === 3 ? 3 : 1),
+      p1Id: r.p1Id,
+      p2Id: r.p2Id,
+      result: this.toResult(r.result),
+      logZipUrl: r.logZipUrl,
+
+      p1GameWins: r.p1GameWins,
+      p2GameWins: r.p2GameWins,
+      game1Result: r.game1Result ? this.toResult(r.game1Result) : undefined,
+      game2Result: r.game2Result ? this.toResult(r.game2Result) : undefined,
+      game3Result: r.game3Result ? this.toResult(r.game3Result) : undefined,
+      game1LogZipUrl: r.game1LogZipUrl,
+      game2LogZipUrl: r.game2LogZipUrl,
+      game3LogZipUrl: r.game3LogZipUrl,
+    }));
+  }
+
+  private toResult(v: string | undefined): MatchResult {
+    const s = (v || '').toUpperCase();
+    switch (s) {
+      case 'P1':
+      case 'P2':
+      case 'DRAW':
+      case 'BYE':
+      case 'NONE':
+        return s as MatchResult;
+      default:
+        return 'NONE';
+    }
   }
 }

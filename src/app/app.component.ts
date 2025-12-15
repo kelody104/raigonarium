@@ -496,6 +496,169 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
       }, 100);
     }
   }
+
+  // ★あなたのPHP(sheep-proxy.php)のURLに変更
+  private readonly sheetApiBaseUrl = 'https://mitarashi.link/api/sheet-proxy.php';
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(',')[1]); // data:...;base64,xxxx の xxxx
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  async uploadTournamentResultMenu(): Promise<void> {
+    // ひとまず固定でOK（あとでモーダルで選択にする）
+    const baseName = '対戦ログ';
+    const tournamentId = '1';
+    const matchId = 'manual';
+
+    const { url } = await this.uploadTournamentResult(baseName, tournamentId, matchId);
+    console.log('uploaded:', url);
+    alert(`アップロードしました\n${url}`);
+  }
+
+  /**
+   * 大会結果ZIPを生成→GASへアップロードしてURLを返す
+   * baseName: ZIP名のベース（例 "雷轟_結果"）
+   */
+  async uploadTournamentResult(
+    baseName: string,
+    tournamentId: string,
+    matchId: string
+  ):
+    Promise<{ url: string }> {
+    if (this.isSaveing) {
+      console.warn('busy');
+      return { url: '' };
+    }
+    this.isSaveing = true;
+    this.progresPercent = 0;
+
+
+    try {
+      // 1) ZIPをBlobで生成（SaveDataService側）
+      const { fileName, blob } = await this.saveDataService.buildTournamentZipAsync(
+        baseName,
+        (p: number) => (this.progresPercent = p)
+      );
+
+      const round = 1;          // まずは固定（あとで実値に）
+      const tableName = 'A01';  // まずは固定（あとで実値に）
+      const matchId = await this.findSwissMatchId(tournamentId, round, tableName);
+
+      // 2) Base64化
+      const base64 = await this.blobToBase64(blob);
+
+      //const base64 = btoa('hello'); // 超小さい
+      // 3) GASへPOST（PHP経由）
+      const res = await fetch(this.sheetApiBaseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'uploadLog',
+          fileName: `${fileName}_${tournamentId}_${matchId}`,
+          base64,
+        }),
+      });
+
+      const raw = await res.text();
+      let json: any;
+      try {
+        json = JSON.parse(raw);
+      } catch {
+        console.error('upload raw response:', raw.slice(0, 800));
+        throw new Error('non-JSON response from upstream');
+      }
+
+      if (!json?.ok) {
+        console.error('uploadLog failed:', json);
+        throw new Error(`${json?.error || 'upload failed'}: ${json?.message || ''}`);
+      }
+
+      // ★アップロードが「成功」した直後に、matchIdでログURLを紐づける
+
+
+      const r2 = await fetch(this.sheetApiBaseUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'updateSwissLog',
+          matchId,
+          logZipUrl: json.url,
+        }),
+      });
+
+      const t2 = await r2.text();
+      let j2: any;
+      try {
+        j2 = JSON.parse(t2);
+      } catch {
+        console.error('updateSwissLog raw response:', t2.slice(0, 800));
+        throw new Error('updateSwissLog non-JSON response');
+      }
+
+      if (!j2.ok) {
+        console.error('updateSwissLog failed:', j2);
+        throw new Error(j2.error || j2.message || 'updateSwissLog failed');
+      }
+
+      return { url: json.url as string };
+    } finally {
+      setTimeout(() => {
+        this.isSaveing = false;
+        this.progresPercent = 0;
+      }, 500);
+    }
+  }
+  private normTableName(v: string): string {
+    const s = (v ?? '').trim().toUpperCase().replace(/\s+/g, '');
+    const m = s.match(/^([A-Z]+)0*(\d+)$/); // A01/A1 を同一視（A1へ）
+    if (m) return `${m[1]}${parseInt(m[2], 10)}`;
+    return s;
+  }
+
+  private async fetchSwissMatches(tournamentId: string): Promise<any[]> {
+    const tryFetch = async (tid: string) => {
+      const url = `${this.sheetApiBaseUrl}?action=swiss&tournamentId=${encodeURIComponent(tid)}`;
+      const r = await fetch(url);
+      const raw = await r.text();
+      let j: any;
+      try { j = JSON.parse(raw); } catch {
+        console.error('getSwiss raw response:', raw.slice(0, 800));
+        throw new Error('getSwiss non-JSON response');
+      }
+      if (!j.ok) throw new Error(j.error || j.message || 'getSwiss failed');
+      return (j.matches ?? j.rows ?? []) as any[];
+    };
+
+    // 1回目：そのまま
+    let matches = await tryFetch(String(tournamentId));
+
+    // 2回目：もし空で、数値IDなら t001 形式も試す（シートが t001 の場合の保険）
+    if (matches.length === 0 && /^\d+$/.test(String(tournamentId))) {
+      const padded = String(tournamentId).padStart(3, '0');
+      matches = await tryFetch(`t${padded}`);
+    }
+
+    return matches;
+  }
+
+  private async findSwissMatchId(tournamentId: string, round: number, tableName: string): Promise<string> {
+    const matches = await this.fetchSwissMatches(String(tournamentId));
+    const target = matches.find(m =>
+      Number(m.round) === Number(round) &&
+      this.normTableName(String(m.tableName || '')) === this.normTableName(String(tableName || ''))
+    );
+
+    if (!target?.matchId) {
+      console.error('match not found', { tournamentId, round, tableName, matches });
+      throw new Error('match not found');
+    }
+    return String(target.matchId);
+  }
 }
 
 PanelService.UIPanelComponentClass = UIPanelComponent;

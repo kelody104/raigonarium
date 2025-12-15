@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { EventSystem, Network } from '@udonarium/core/system';
@@ -14,6 +14,8 @@ import { PeerSessionGrade } from '@udonarium/core/system/network/peer-session-st
 import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
 import { AppConfig, AppConfigService } from 'service/app-config.service';
 import { Tournament, Entry } from 'src/app/models/tournament-models';
+import { TournamentHallModalComponent } from '../tournament-hall-modal/tournament-hall-modal.component';
+import { TournamentBoardModalComponent } from '../tournament-board-modal/tournament-board-modal.component';
 
 @Component({
   selector: 'lobby',
@@ -40,6 +42,9 @@ export class LobbyComponent implements OnInit, OnDestroy {
   selectedTournament?: Tournament;
   enterMode: 'PLAYER' | 'WATCHER' = 'WATCHER';
   enteredEntry?: Entry;
+  @ViewChild(TournamentHallModalComponent) tournamentHall?: TournamentHallModalComponent;
+  @ViewChild(TournamentBoardModalComponent) tournamentBoard?: TournamentBoardModalComponent;
+
 
   get currentRoom(): string { return Network.peer.roomId };
   get peerId(): string { return Network.peerId; }
@@ -247,4 +252,5 @@ export class LobbyComponent implements OnInit, OnDestroy {
   onTournamentBoardClose() {
     this.isTournamentBoardOpen = false;
   }
+
 }

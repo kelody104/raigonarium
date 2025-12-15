@@ -1,4 +1,3 @@
-// WebAppID: https://script.google.com/macros/s/AKfycbyY9haebkJHKVKeVmu1L1UtvNhlPNtEIcz9V20Ldza1wuZSBUh3aqQpZo5qMPAP0W4_HQ/exec
 import { Injectable } from '@angular/core';
 
 export type TournamentMaster = {
@@ -9,46 +8,128 @@ export type TournamentMaster = {
 
 export type EntryRow = {
   rowNumber: number;
-  entryTime: string;     // ISO
+  entryTime: string; // ISO
   tournamentId: string;
   playerId: string;
   playerName: string;
-  items: string[];       // 20個
+  items: string[]; // 20個
+};
+
+// --- 追加：スイス/トーナメント行（GASが返す形） ---
+export type SwissMatchRow = {
+  matchId: string;
+  tournamentId: string;
+  round: number;
+  tableName: string;
+  p1Id?: string;
+  p2Id?: string;
+  p1Wins?: number;
+  p2Wins?: number;
+  result: string; // 'NONE' | 'P1' | 'P2' | 'DRAW' | 'BYE' など
+  logZipUrl?: string;
+};
+
+export type BracketMatchRow = {
+  matchId: string;
+  tournamentId: string;
+  round: number;
+  tableName: string;
+  bestOf?: 1 | 3;
+
+  p1Id?: string;
+  p2Id?: string;
+  result: string;
+  logZipUrl?: string;
+
+  // BO3（FINAL）
+  p1GameWins?: number;
+  p2GameWins?: number;
+  game1Result?: string;
+  game2Result?: string;
+  game3Result?: string;
+  game1LogZipUrl?: string;
+  game2LogZipUrl?: string;
+  game3LogZipUrl?: string;
 };
 
 @Injectable({ providedIn: 'root' })
 export class SheetApiService {
-  // ★あなたのGAS WebアプリURLに差し替え
-  private readonly baseUrl = 'https://mitarashi.link/api/sheet-proxy.php';
+  private readonly baseUrl = 'https://mitarashi.link/api/sheet-proxy.php'; // :contentReference[oaicite:2]{index=2}
+  private readonly token: string | null = null; // :contentReference[oaicite:3]{index=3}
 
-  // ★GAS側でトークンを有効にした場合だけ入れる（空なら無効）
-  private readonly token: string | null = null;
+  async listTournaments(): Promise<TournamentMaster[]> {
+    const url = `${this.baseUrl}?action=tournaments&_=${Date.now()}`; // :contentReference[oaicite:4]{index=4}
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error(`tournaments failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'tournaments error');
+    return (json.tournaments ?? json.rows ?? []) as TournamentMaster[];
+  }
 
-async listTournaments(): Promise<TournamentMaster[]> {
-  // ★必ず action を付ける
-  const url = `${this.baseUrl}?action=tournaments&_=${Date.now()}`;
-
-  const res = await fetch(url, { method: 'GET', cache: 'no-store' });
-  if (!res.ok) throw new Error(`tournaments failed: ${res.status}`);
-
-  const json = await res.json();
-  if (!json.ok) throw new Error(json.error || 'tournaments error');
-
-  // ★GASが旧挙動で rows を返すケースも吸収（保険）
-  const list = (json.tournaments ?? json.rows ?? []) as TournamentMaster[];
-  return list;
-}
-
+  // 既存（playerId検索） :contentReference[oaicite:5]{index=5}
   async listEntriesByPlayerId(playerId: string, limit = 200): Promise<EntryRow[]> {
     const pid = (playerId || '').trim();
-    if (!pid) return []; // 空なら0件（要求仕様）
-
+    if (!pid) return [];
     const url = `${this.baseUrl}?playerId=${encodeURIComponent(pid)}&limit=${encodeURIComponent(String(limit))}`;
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error(`entries failed: ${res.status}`);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'entries error');
     return (json.rows || []) as EntryRow[];
+  }
+
+  // --- 追加：大会IDでEntry一覧 ---
+  async listEntriesByTournamentId(tournamentId: string, limit = 500): Promise<EntryRow[]> {
+    const tid = (tournamentId || '').trim();
+    if (!tid) return [];
+    const url = `${this.baseUrl}?action=entries&tournamentId=${encodeURIComponent(tid)}&limit=${encodeURIComponent(
+      String(limit)
+    )}&_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error(`entries(tournament) failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'entries(tournament) error');
+    return (json.rows || []) as EntryRow[];
+  }
+
+  // --- 追加：参加者IDでEntryを1件取得（入場チェック用） ---
+  async getEntryById(tournamentId: string, entryId: string): Promise<EntryRow | undefined> {
+    const tid = (tournamentId || '').trim();
+    const id = (entryId || '').trim();
+    if (!tid || !id) return undefined;
+
+    const url = `${this.baseUrl}?action=entry&tournamentId=${encodeURIComponent(tid)}&entryId=${encodeURIComponent(
+      id
+    )}&_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error(`entry failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'entry error');
+    return (json.entry || undefined) as EntryRow | undefined;
+  }
+
+  // --- 追加：SwissMatches ---
+  async listSwissMatches(tournamentId: string): Promise<SwissMatchRow[]> {
+    const tid = (tournamentId || '').trim();
+    if (!tid) return [];
+    const url = `${this.baseUrl}?action=swiss&tournamentId=${encodeURIComponent(tid)}&_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error(`swiss failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'swiss error');
+    return (json.matches || json.rows || []) as SwissMatchRow[];
+  }
+
+  // --- 追加：BracketMatches ---
+  async listBracketMatches(tournamentId: string): Promise<BracketMatchRow[]> {
+    const tid = (tournamentId || '').trim();
+    if (!tid) return [];
+    const url = `${this.baseUrl}?action=bracket&tournamentId=${encodeURIComponent(tid)}&_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error(`bracket failed: ${res.status}`);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'bracket error');
+    return (json.matches || json.rows || []) as BracketMatchRow[];
   }
 
   async appendEntry(tournamentId: string, playerId: string, playerName: string, items: string[]): Promise<void> {
@@ -89,12 +170,8 @@ async listTournaments(): Promise<TournamentMaster[]> {
       body: JSON.stringify(body),
     });
 
-    const text = await res.text(); // ★まず生で読む
-
-    if (!res.ok) {
-      // ★プロキシが返した JSON エラーもそのまま表示できる
-      throw new Error(`post failed: ${res.status} ${text}`);
-    }
+    const text = await res.text();
+    if (!res.ok) throw new Error(`post failed: ${res.status} ${text}`);
 
     let json: any;
     try {
@@ -102,7 +179,6 @@ async listTournaments(): Promise<TournamentMaster[]> {
     } catch {
       throw new Error(`post response is not JSON: ${text.slice(0, 200)}`);
     }
-
     if (!json.ok) throw new Error(json.error || 'post error');
   }
 }
