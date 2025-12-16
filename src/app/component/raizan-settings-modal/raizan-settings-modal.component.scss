@@ -1,212 +1,273 @@
 /* src/app/component/raizan-settings-modal/raizan-settings-modal.component.scss */
 
 :host {
+  display: block;
+}
+
+/* ===== Overlay / Modal frame ===== */
+.overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-}
-
-/* 画面全体を覆う背景 */
-.raizan-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.60);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 
-/* モーダル本体（元の白い箱っぽい見た目） */
-.raizan-modal {
-  background: #fefefe;
-  border-radius: 8px;
-  padding: 16px;
-  width: 90%;
-  max-width: 960px;
-  height: 80vh;
-  max-height: 80vh;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+.modal {
+  width: min(980px, 96vw);
+  height: min(92vh, 920px); /* ★スクロールのため高さを確定 */
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: rgba(28, 28, 32, 0.98);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
-/* ヘッダー */
-.raizan-header {
+/* ===== Header / Footer ===== */
+.header {
+  flex: 0 0 auto;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-
-  h2 {
-    margin: 0;
-    font-size: 20px;
-  }
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
 }
 
-/* タイトル行右側のボタン群 */
-.header-buttons {
+.title {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.x {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* ★ここがスクロール領域 */
+.body {
+  flex: 1 1 auto;
+  min-height: 0; /* ★overflow有効化の鍵 */
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.footer {
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap; /* ★右外へ溢れない */
+}
+
+/* ===== Buttons (modal内だけ上書き) ===== */
+.btn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+  .btn.primary {
+    background: rgba(90, 150, 255, 0.32);
+    border-color: rgba(90, 150, 255, 0.55);
+  }
+
+/* ===== Rows / Forms ===== */
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+  .row > * {
+    min-width: 0; /* ★はみ出し防止の定番 */
+  }
+
+  .row label {
+    opacity: 0.9;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .row select,
+  .row input[type="text"] {
+    width: 100%;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    padding: 0 10px;
+    outline: none;
+  }
+
+    /* ドロップダウンの背景を黒く */
+    .row select option {
+      background: #1f1f24;
+      color: #fff;
+    }
+
+  /* モード：行は広いまま、selectだけ短く */
+  .row.row--mode {
+    grid-template-columns: 96px auto;
+    justify-content: start;
+  }
+
+    .row.row--mode select {
+      width: 200px;
+      max-width: 50vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+  /* 検索：左に寄せる + はみ出し防止 */
+  .row.row--search {
+    grid-template-columns: 60px 1fr;
+    margin-bottom: 10px;
+  }
+
+/* ===== Panes ===== */
+.pane {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.paneTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+  .paneTitle .sub {
+    font-weight: 500;
+    opacity: 0.8;
+    font-size: 12px;
+  }
+
+/* ===== 音無 & 言霊：8列固定 ===== */
+.pieceGrid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.pieceCard {
+  width: 100%;
+  border-radius: 0px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.pieceImg {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 0px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.countRow {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
-button.primary {
-  padding: 4px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: #ffb74d;
-  cursor: pointer;
+.countLabel {
+  font-size: 11px;
+  opacity: 0.85;
+  white-space: nowrap;
 }
 
-button.secondary {
-  padding: 4px 12px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  cursor: pointer;
-}
-
-.close-button {
-  border: none;
-  background: transparent;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.raizan-body {
-  flex: 1;
-  /* ここを auto → scroll にする */
-  overflow-y: scroll;
-  overflow-x: hidden;
-  padding-right: 6px;
-}
-
-  /* セクション間隔 */
-  .raizan-body section + section {
-    margin-top: 16px;
-  }
-
-/* モード行 */
-.mode-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 8px;
-
-  .mode-left select {
-    margin-left: 6px;
-  }
-
-  .mode-middle {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .mode-right {
-    margin-left: auto;
-  }
-}
-
-/* 駒グリッド共通 */
-.piece-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 12px;
-}
-
-.piece-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 12px;
-}
-
-/* 駒画像 */
-.piece-img {
+.countSelect {
   width: 64px;
-  height: 64px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-  /* countInGame = 0 */
-  .piece-img.disabled {
-    filter: grayscale(100%);
-    opacity: 0.4;
-  }
-
-.piece-name {
-  margin-top: 4px;
-  text-align: center;
-}
-
-/* ★ 使用数：添付フォーマット */
-.count-row {
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.count-label {
-  font-size: 11px;
-  color: #999;
-}
-
-.count-select {
-  width: 40px;
-  height: 20px;
+  height: 30px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
   padding: 0 6px;
-  font-size: 12px;
-  border-radius: 4px;
-  border: 1px solid #bdbdbd;
-  background: #fff;
+  outline: none;
 }
 
-/* 奥義ヘッダー */
-.ougi-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.ougi-search-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  input[type='text'] {
-    padding: 2px 6px;
-    min-width: 220px;
-  }
-}
-
-.ougi-search-count {
-  font-size: 11px;
-  color: #666;
-}
-
-/* ★奥義：1行9個 */
-.piece-grid-ougi {
+/* ===== 奥義：12列固定 ===== */
+.ougiGrid {
   display: grid;
-  grid-template-columns: repeat(9, minmax(64px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
 }
 
-/* ★ボタンを“駒だけ”にする（デカい白タイル化を防ぐ） */
-.ougi-button {
-  background: transparent;
-  border: none;
+.ougiBtn {
+  width: 100%;
+  aspect-ratio: 1 / 1;
   padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
+}
 
-  &:focus {
-    outline: none;
-  }
+.ougiImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.disabled {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+
+/* 使用数含む、全selectのドロップダウン（option）を確実に暗色に */
+.modal select option,
+.modal .countSelect option {
+  background: #1f1f24 !important;
+  color: #fff !important;
+}
+
+/* （補助）Windows/Chromeで白く残る時の保険 */
+.modal select,
+.modal .countSelect {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }

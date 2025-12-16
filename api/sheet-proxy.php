@@ -26,7 +26,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 header('Content-Type: application/json; charset=utf-8');
 
 // ★GAS WebアプリURL（/execまで）
-$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/exec';
+//$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/exec';
+$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/dev';
 
 // ★許可するリダイレクト先（SSRF対策）
 $ALLOW_HOSTS = ['script.google.com', 'script.googleusercontent.com'];

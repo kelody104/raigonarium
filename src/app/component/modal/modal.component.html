@@ -1,16 +1,28 @@
-<div class="component">
-  <div [@bgInOut]="'in'" class="modal-background" (click)="clickBackground($event)"></div>
-  <div [@flyInOut]="'in'" class="modal-panel">
+<div class="component" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+  <!-- 背景：クリックを吸収する（デフォルトでは閉じない） -->
+  <div [@bgInOut]="'in'"
+       class="modal-background"
+       (mousedown)="$event.stopPropagation()"
+       (click)="clickBackground($event)">
+  </div>
+
+  <!-- モーダル本体 -->
+  <div [@flyInOut]="'in'"
+       class="modal-panel"
+       (mousedown)="$event.stopPropagation()"
+       (click)="$event.stopPropagation()">
     <div class="title">
-      <div class="title-text">{{modalService.title}}</div>
+      <div class="title-text">{{ modalService.title }}</div>
       <div class="title-button">
-        <button (click)="resolve()"><i class="material-icons" style="font-size: 14px;">close</i></button>
+        <button (click)="resolve()">
+          <i class="material-icons" style="font-size: 14px;">close</i>
+        </button>
       </div>
     </div>
+
     <div class="scrollable-panel">
       <ng-content></ng-content>
       <div #content></div>
     </div>
-    <!--<div class="footer"><button (click)="resolve()">OK</button><button (click)="resolve()">CANCEL</button></div>-->
   </div>
 </div>

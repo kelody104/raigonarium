@@ -1,56 +1,34 @@
 <!-- src/app/component/raizan-settings-modal/raizan-settings-modal.component.html -->
-<div class="raizan-backdrop" (click)="onClickBackdrop()">
-  <div class="raizan-modal" (click)="$event.stopPropagation()">
+<div class="overlay">
+  <div class="modal" (click)="$event.stopPropagation()">
 
-    <div class="raizan-header">
-      <h2>雷山設定</h2>
-
-      <div class="header-buttons">
-        <button type="button" class="primary" (click)="onClickSave()">雷山生成</button>
-        <!--<button type="button" class="secondary" (click)="onClickClose()">キャンセル</button>-->
-        <div class="mode-right">
-          <button type="button"
-                  class="primary"
-                  (click)="onClickPlaceToTsuki()">
-                  <!--[disabled]="selectedBattleMode !== '雷神戦モード'"-->
-            月に置く
-          </button>
-        </div>
-        <button type="button" class="close-button" (click)="onClickClose()">×</button>
-      </div>
+    <div class="header">
+      <div class="title">雷山設定</div>
+      <button type="button" class="x" (click)="onClickClose()">×</button>
     </div>
 
-    <div class="raizan-body">
+    <!-- ★スクロール領域 -->
+    <div class="body">
+      <div class="row row--mode">
+        <label>モード</label>
+        <select [(ngModel)]="selectedBattleMode">
+          <option *ngFor="let mode of battleModes" [ngValue]="mode">{{ mode }}</option>
+        </select>
+      </div>
 
-      <!--<section class="mode-row">
-        <label class="mode-left">
-          モード選択：
-          <select [(ngModel)]="selectedBattleMode">
-            <option *ngFor="let mode of battleModes" [ngValue]="mode">{{ mode }}</option>
-          </select>
-        </label>-->
+      <!-- 音無 / 言霊 -->
+      <section class="pane">
+        <div class="paneTitle">音無 &amp; 言霊</div>
 
-        <!--<label class="mode-middle">
-          <input type="checkbox" [(ngModel)]="useGora" />
-          <span>豪雷を使用する</span>
-        </label>-->
-
-
-      <!--</section>-->
-
-      <section>
-        <h3>音無 &amp; 言霊</h3>
-
-        <div class="piece-grid">
-          <div class="piece-item" *ngFor="let piece of otonashiPieces">
-            <img class="piece-img" (click)="Createkoma(piece)"
+        <div class="pieceGrid">
+          <div class="pieceCard" *ngFor="let piece of otonashiPieces">
+            <img class="pieceImg"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name" />
-            <!--<div class="piece-name">{{ piece.name }}</div>-->
 
-            <div class="count-row">
-              <span class="count-label">使用数</span>
-              <select class="count-select"
+            <div class="countRow">
+              <span class="countLabel">使用数</span>
+              <select class="countSelect"
                       [ngModel]="piece.countInGame"
                       (ngModelChange)="onChangeCount(piece, $event)">
                 <option *ngFor="let c of countOptions" [ngValue]="c">{{ c }}</option>
@@ -58,15 +36,15 @@
             </div>
           </div>
 
-          <div class="piece-item" *ngFor="let piece of kotodamaPieces">
-            <img class="piece-img"
+          <div class="pieceCard" *ngFor="let piece of kotodamaPieces">
+            <img class="pieceImg"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
-                 [alt]="piece.name" />
-            <!--<div class="piece-name">{{ piece.name }}</div>-->
+                 [alt]="piece.name"
+                  [title]="piece.text || ''" />
 
-            <div class="count-row">
-              <span class="count-label">使用数</span>
-              <select class="count-select"
+            <div class="countRow">
+              <span class="countLabel">使用数</span>
+              <select class="countSelect"
                       [ngModel]="piece.countInGame"
                       (ngModelChange)="onChangeCount(piece, $event)">
                 <option *ngFor="let c of countOptions" [ngValue]="c">{{ c }}</option>
@@ -76,40 +54,40 @@
         </div>
       </section>
 
-      <section class="ougi-section">
-        <div class="ougi-header">
-          <h3>奥義</h3>
-
-          <div class="ougi-search-row">
-            <label>
-              検索：
-              <input type="text"
-                     [(ngModel)]="ougiSearchTerm"
-                     placeholder="ひらがなで入力（例：はく）" />
-            </label>
-
-            <span class="ougi-search-count">
-              該当 {{ filteredOugiPieces.length }} / {{ ougiPieces.length }} 個
-            </span>
-          </div>
+      <!-- 奥義 -->
+      <section class="pane">
+        <div class="paneTitle">
+          奥義
+          <span class="sub">該当 {{ filteredOugiPieces.length }} / {{ ougiPieces.length }}</span>
         </div>
 
-        <!-- ★ 1行9個 -->
-        <div class="piece-grid-ougi">
+        <div class="row row--search">
+          <label>検索</label>
+          <input type="text"
+                 [(ngModel)]="ougiSearchTerm"
+                 placeholder="ひらがなで入力（例：げき）" />
+        </div>
+
+        <div class="ougiGrid">
           <button type="button"
-                  class="ougi-button"
+                  class="ougiBtn"
                   *ngFor="let piece of filteredOugiPieces"
-                  (click)="toggleOugi(piece)">
-            <!--toggleOugi(piece)-->
-            <img class="piece-img"
+                  (click)="toggleOugi(piece)"
+                  [title]="piece.text || ''" >
+            <img class="ougiImg"
                  [src]="'assets/images/raigo/koma/' + piece.name + '.jpg'"
                  [alt]="piece.name"
                  [class.disabled]="piece.countInGame === 0" />
-            <!--<div class="piece-name">{{ piece.name }}</div>-->
           </button>
         </div>
       </section>
+    </div>
 
+    <!-- ★常に下に固定される -->
+    <div class="footer">
+      <button type="button" class="btn" (click)="onClickClose()">閉じる</button>
+      <button type="button" class="btn" (click)="onClickPlaceToTsuki()">月に置く</button>
+      <button type="button" class="btn primary" (click)="onClickSave()">雷山生成</button>
     </div>
 
   </div>

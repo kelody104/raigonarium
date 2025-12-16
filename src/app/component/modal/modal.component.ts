@@ -32,11 +32,15 @@ import { ModalService } from 'service/modal.service';
 export class ModalComponent {
   @ViewChild('content', { read: ViewContainerRef, static: true }) content: ViewContainerRef;
 
-  constructor(
-    public modalService: ModalService) { }
+  constructor(public modalService: ModalService) { }
 
   clickBackground(event: MouseEvent) {
-    if (event.target === event.currentTarget) this.resolve();
+    // 背景クリックは「閉じない」がデフォルト
+    // 閉じたいモーダルだけ open() の option で closeOnBackdrop:true を渡す
+    if (event.target !== event.currentTarget) return;
+
+    const closeOnBackdrop = !!this.modalService.option?.closeOnBackdrop;
+    if (closeOnBackdrop) this.resolve();
   }
 
   resolve() {

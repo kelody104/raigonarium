@@ -72,11 +72,13 @@
     </ng-container>
   </div>
 </div>
+
 <div *ngIf="!isConnected;else other_content">
   <button (click)="reload()" [disabled]="isReloading">一覧を更新</button>
   <button (click)="showRoomSetting()">新しいルームを作成する</button>
   <!--  <button type="button" (click)="showTournamentRoomSetting()">大会用ルームを作成</button>-->
-  <button (click)="openTournamentHall()">大会会場</button>
+  <button (click)="openRaizanSato()">雷山の里</button>
+
   <hr />
   <ng-container *ngIf="rooms.length">
     <table class="room-list">
@@ -95,7 +97,6 @@
             <i class="material-icons" style="vertical-align: middle; font-size:0.9rem;">lock</i>
           </td>
           <td *ngIf="!room.hasPassword">-</td>
-          <!-- 参加者表示： 1人 → 1/4人 のように -->
           <td>
             {{ room.peers.length }}
             <span *ngIf="getRoomCapacity(room) !== null">
@@ -103,7 +104,6 @@
             </span>人
           </td>
           <td>
-            <!-- 接続ボタン：満室なら disabled -->
           <td>
             <button [disabled]="room.id === currentRoom || !canConnect(room)"
                     *ngIf="0 < room.id.length"
@@ -118,7 +118,14 @@
   </ng-container>
   <span *ngIf="rooms.length < 1" style="font-size: 12px;">{{help}}</span>
 </div>
-<ng-template #other_content><span style="font-size: 12px;">別のルームに接続したい場合は、他の参加者との接続を切ってください。<br>（※ページリロードで切断できます。）</span></ng-template>
+
+<ng-template #other_content>
+  <span style="font-size: 12px;">
+    別のルームに接続したい場合は、他の参加者との接続を切ってください。<br>
+    （※ページリロードで切断できます。）
+  </span>
+</ng-template>
+
 <app-tournament-hall-modal [isOpen]="isTournamentHallOpen"
                            (close)="onTournamentHallClose()"
                            (entered)="onEntered($event)">

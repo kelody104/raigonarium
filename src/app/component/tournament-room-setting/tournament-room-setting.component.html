@@ -1,31 +1,38 @@
 <!-- src/app/component/tournament-room-setting/tournament-room-setting.component.html -->
-<div class="tournament-room-setting">
+<div class="overlay">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="header">
+      <div class="title">大会ルーム作成</div>
+      <button type="button" class="x" (click)="cancel()">×</button>
+    </div>
 
-  <div class="form-row">
-    <label>大会名選択：</label>
-    <select [(ngModel)]="selectedEventIndex">
-      <option *ngFor="let ev of events; index as i" [value]="i">
-        {{ ev.name }}
-      </option>
-    </select>
-  </div>
+    <div class="body">
+      <div class="row">
+        <label>大会名</label>
+        <select [(ngModel)]="selectedEventIndex">
+          <option *ngFor="let ev of events; index as i" [value]="i">
+            {{ ev.name }}
+          </option>
+        </select>
+      </div>
 
-  <div class="form-row">
-    <label>ルーム選択：</label>
-    <select [(ngModel)]="selectedRoomIndex">
-      <option *ngFor="let rm of rooms; index as i" [value]="i">
-        {{ rm.name }}
-      </option>
-    </select>
-  </div>
+      <div class="row">
+        <label>ルーム</label>
+        <select [(ngModel)]="selectedRoomIndex">
+          <option *ngFor="let rm of rooms; index as i" [value]="i">
+            {{ rm.name }}
+          </option>
+        </select>
+      </div>
 
-  <div class="form-row info">
-    入室可能人数：{{ maxPlayers }}人（固定）
-    ／ パスワード：なし
-  </div>
+      <div class="row info">
+        入室可能人数：{{ maxPlayers }}人（固定）／ パスワード：なし
+      </div>
+    </div>
 
-  <div class="button-row">
-    <button type="button" (click)="createTournamentRoom()">作成</button>
-    <button type="button" (click)="cancel()">キャンセル</button>
+    <div class="footer">
+      <button type="button" class="btn" (click)="cancel()">キャンセル</button>
+      <button type="button" class="btn primary" (click)="createTournamentRoom()">作成</button>
+    </div>
   </div>
 </div>

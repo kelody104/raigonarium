@@ -1,0 +1,117 @@
+<div class="overlay">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="header">
+      <div class="title">雷山の里</div>
+
+      <button *ngIf="member;" (click)="logout()" [disabled]="isBusy">ログアウト</button>
+    </div>
+
+    <div class="body">
+      <div *ngIf="member; else loginForm" class="panel">
+        <div class="line">
+          <span class="label">ログイン中：{{ member.familyName }} </span>
+          <span class="value">{{ member.playerName || member.playerId }}　</span>
+          <span class="sub">段位：{{ member.rank }}　</span>
+          <span class="sub">所属家門：{{ member.familyName }}家　</span>
+          <span class="sub">所属地域：{{ member.region }}　</span>
+          <span class="sub">今季獲得Ｒポイント：9999　</span>
+          <span class="sub">今季レート：9999　</span>
+        </div>
+        <hr />
+        参加中の大会：
+        <div class="menu">
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2026</button>
+        </div>
+        <hr />
+        受付中の大会：
+        <div class="menu">
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2026</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026夏</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2026</button>
+        </div>
+        <hr />
+        大会開始前の大会：
+        <div class="menu">
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026夏</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2026</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026秋</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2026</button>
+        </div>
+        <hr />
+        過去の大会：
+        <div class="menu">
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2025</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2025</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】群馬支部大会2025</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2025</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2025</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2024</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2024</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】群馬支部大会2024</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2024</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2024</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2023</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2023</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】千葉支部大会2023</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2023</button>
+          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2023</button>
+        </div>
+        <hr />
+        <!--<div class="note">
+    ※ここに「雷轟コミュニティ情報」を今後追加していく想定ああああああああああああああああああああああああああああああああああああああああああああああ
+  </div>-->
+      </div>
+
+      <ng-template #loginForm>
+        <div class="loginCenter">
+          <div class="panel">
+            <!--<div class="desc">
+        会員ログインすると、雷山の里メニューが使えます。
+        ログインしなくても観戦者として大会会場に入れます。
+      </div>-->
+
+            <div class="row">
+              <div class="label">雷人ID</div>
+              <input [(ngModel)]="playerId" placeholder="例）t001" autocomplete="username" />
+            </div>
+
+            <div class="row">
+              <div class="label">パスワード</div>
+              <input [(ngModel)]="password" type="password" autocomplete="current-password" />
+            </div>
+
+
+
+            <div *ngIf="error" class="error">{{ error }}</div>
+
+            <div class="actions">
+              <button (click)="login(false)" [disabled]="isBusy || !playerId || !password">ログイン</button>
+              <button (click)="goTournamentHallWithoutLogin()" [disabled]="isBusy">ログインせずに大会会場へ</button>
+              <button (click)="close()" [disabled]="isBusy">とじる</button>
+              <label class="remember">
+                <input type="checkbox" [(ngModel)]="remember" />
+                次回から自動ログイン（端末に保存）
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- ログイン処理中表示 -->
+        <div class="loginLoading" *ngIf="isBusy && !member" aria-live="polite">
+          <div class="orbitWrap">
+            <div class="loadingLabel">Login...</div>
+
+            <div class="dots">
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+</div>
+

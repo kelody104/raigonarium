@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { EventSystem, Network } from '@udonarium/core/system';
@@ -16,6 +16,7 @@ import { AppConfig, AppConfigService } from 'service/app-config.service';
 import { Tournament, Entry } from 'src/app/models/tournament-models';
 import { TournamentHallModalComponent } from '../tournament-hall-modal/tournament-hall-modal.component';
 import { TournamentBoardModalComponent } from '../tournament-board-modal/tournament-board-modal.component';
+import { RaizanSatoModalComponent, RaizanSatoResult } from '../raizan-sato-modal/raizan-sato-modal.component';
 
 @Component({
   selector: 'lobby',
@@ -44,7 +45,6 @@ export class LobbyComponent implements OnInit, OnDestroy {
   enteredEntry?: Entry;
   @ViewChild(TournamentHallModalComponent) tournamentHall?: TournamentHallModalComponent;
   @ViewChild(TournamentBoardModalComponent) tournamentBoard?: TournamentBoardModalComponent;
-
 
   get currentRoom(): string { return Network.peer.roomId };
   get peerId(): string { return Network.peerId; }
@@ -226,11 +226,22 @@ export class LobbyComponent implements OnInit, OnDestroy {
     Network.connect(peer);
   }
 
+  //===============雷山の里==================
+  async openRaizanSato() {
+    const width = 560;
+    const height = 420;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    const result = await this.modalService.open<RaizanSatoResult>(RaizanSatoModalComponent, { width, height, left, top });
+    if (result?.action === 'OPEN_TOURNAMENT_HALL') {
+      this.openTournamentHall();
+    }
+  }
+
   //===============大会情報==================
-  // 追加メソッド
   openTournamentHall() {
     this.isTournamentHallOpen = true;
-    // 開いた瞬間に一覧ロードさせるためのhook（*ngIf生成後に呼ぶのが確実）
     setTimeout(() => (this as any).tournamentHall?.onOpen?.(), 0);
   }
 
@@ -252,5 +263,4 @@ export class LobbyComponent implements OnInit, OnDestroy {
   onTournamentBoardClose() {
     this.isTournamentBoardOpen = false;
   }
-
 }

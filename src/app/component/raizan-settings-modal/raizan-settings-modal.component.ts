@@ -11,7 +11,6 @@ type BattleMode = '雷轟戦モード' | '雷神戦モード';
   styleUrls: ['./raizan-settings-modal.component.scss'],
 })
 export class RaizanSettingsModalComponent implements OnInit {
-
   @Input() otonashiPieces: Piece[] = [];
   @Input() kotodamaPieces: Piece[] = [];
   @Input() ougiPieces: Piece[] = [];
@@ -99,6 +98,7 @@ export class RaizanSettingsModalComponent implements OnInit {
     this.close.emit();
   }
 
+  // ※今回のHTMLでは使いません（画面外クリックで閉じないため）
   onClickBackdrop(): void {
     this.close.emit();
   }
@@ -117,8 +117,6 @@ export class RaizanSettingsModalComponent implements OnInit {
 
   /** 「月に置く」ボタン：countInGame === 1 の奥義だけ通知 */
   onClickPlaceToTsuki(): void {
-/*    if (this.selectedBattleMode !== '雷神戦モード') return;*/
-
     const ougiToPlace = this.ougiPieces.filter((p: any) => Number(p.countInGame ?? 0) === 1);
     if (ougiToPlace.length === 0) return;
 

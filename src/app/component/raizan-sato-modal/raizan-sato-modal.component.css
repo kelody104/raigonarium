@@ -1,0 +1,407 @@
+:host {
+  display: block;
+}
+
+/* 親モーダルの「無名のモーダル」バーを視覚的に覆うため、画面全体 fixed */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  /* 親側でも暗くなってるはずなので、二重に暗くしたくなければ 0.15 くらいに */
+  background: rgba(0,0,0,0.20);
+}
+
+.modal {
+  /* ★横幅を倍くらい：ほぼ画面いっぱいまで */
+  width: min(1700px, 98vw);
+  height: min(920px, 92vh);
+  max-width: 98vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(20, 20, 24, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.55);
+  color: rgba(255,255,255,0.92);
+  position: relative; /* 擬似要素の土台 */
+}
+
+  /* 画像レイヤー */
+  .modal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url("/assets/images/raigo/raijin/6.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60% auto;
+    opacity: 0.2; /* ★薄さ調整（0.10〜0.25あたり） */
+    filter: saturate(0.9) contrast(1.05);
+    pointer-events: none;
+  }
+
+  /* 中身を画像より前に */
+  .modal > * {
+    position: relative;
+    z-index: 1;
+  }
+
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient( 180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02) );
+}
+
+.title {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+  line-height: 36px;
+  font-size: 18px;
+}
+
+  .icon-btn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.panel {
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+}
+
+.desc {
+  margin-bottom: 12px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.82);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  margin: 12px 0;
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+  .line .label {
+    font-weight: 700;
+    color: rgba(255,255,255,0.80);
+  }
+
+  .line .value {
+    font-weight: 800;
+  }
+
+  .line .sub {
+    opacity: 0.75;
+  }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+  .row .label {
+    width: 110px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.78);
+  }
+
+  .row input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(0,0,0,0.25);
+    color: rgba(255,255,255,0.92);
+    outline: none;
+  }
+
+    .row input:focus {
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(0,0,0,0.32);
+    }
+
+.remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  user-select: none;
+  color: rgba(255,255,255,0.82);
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+  .remember input[type="checkbox"] {
+    transform: translateY(1px);
+  }
+
+button {
+  appearance: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+  button:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+.actions, .menu {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+  .actions button:first-child,
+  .menu button:first-child {
+    border-color: rgba(80,160,255,0.55);
+    background: rgba(80,160,255,0.20);
+  }
+
+    .actions button:first-child:hover,
+    .menu button:first-child:hover {
+      background: rgba(80,160,255,0.28);
+    }
+
+.error {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,60,60,0.15);
+  border: 1px solid rgba(255,60,60,0.35);
+  color: rgba(255,230,230,0.95);
+  font-weight: 800;
+  white-space: pre-wrap;
+}
+
+.note {
+  margin-top: 12px;
+  opacity: 0.8;
+  font-size: 12px;
+}
+
+:host {
+  position: relative;
+}
+/* すでにあってもOK */
+
+/* ログイン中オーバーレイ（既存のままでOKならそのまま） */
+.loginLoading {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(1px);
+  cursor: wait;
+}
+
+/* ここを触ればサイズ調整が楽 */
+.orbitWrap {
+  --r: 158px; /* ★点の半径（外側にしたい→増やす） */
+  --dotSize: 32px; /* ★点のサイズ */
+  --dur: 0.5s; /* ★1周の速さ（小さいほど速い） */
+
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.loadingLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44px; /* ★Login文字サイズ */
+  font-weight: 800;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.02em;
+}
+
+.dots {
+  position: absolute;
+  inset: 0;
+}
+
+.dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(var(--a)) translate(0, calc(var(--r) * -1));
+  font-size: var(--dotSize);
+  line-height: 1;
+  color: rgba(255,255,255,0.90);
+  opacity: 0.18;
+  animation: dotBlink var(--dur) linear infinite;
+  animation-delay: calc(var(--i) * (var(--dur) / 16));
+}
+
+/* 点滅：先頭だけ明るく→すぐ薄く */
+@keyframes dotBlink {
+  0% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 0.18;
+  }
+
+  100% {
+    opacity: 0.18;
+  }
+}
+
+/* 16方向（角度と順番） */
+.dot:nth-child(1) {
+  --i: 0;
+  --a: 0deg;
+}
+
+.dot:nth-child(2) {
+  --i: 1;
+  --a: 22.5deg;
+}
+
+.dot:nth-child(3) {
+  --i: 2;
+  --a: 45deg;
+}
+
+.dot:nth-child(4) {
+  --i: 3;
+  --a: 67.5deg;
+}
+
+.dot:nth-child(5) {
+  --i: 4;
+  --a: 90deg;
+}
+
+.dot:nth-child(6) {
+  --i: 5;
+  --a: 112.5deg;
+}
+
+.dot:nth-child(7) {
+  --i: 6;
+  --a: 135deg;
+}
+
+.dot:nth-child(8) {
+  --i: 7;
+  --a: 157.5deg;
+}
+
+.dot:nth-child(9) {
+  --i: 8;
+  --a: 180deg;
+}
+
+.dot:nth-child(10) {
+  --i: 9;
+  --a: 202.5deg;
+}
+
+.dot:nth-child(11) {
+  --i: 10;
+  --a: 225deg;
+}
+
+.dot:nth-child(12) {
+  --i: 11;
+  --a: 247.5deg;
+}
+
+.dot:nth-child(13) {
+  --i: 12;
+  --a: 270deg;
+}
+
+.dot:nth-child(14) {
+  --i: 13;
+  --a: 292.5deg;
+}
+
+.dot:nth-child(15) {
+  --i: 14;
+  --a: 315deg;
+}
+
+.dot:nth-child(16) {
+  --i: 15;
+  --a: 337.5deg;
+}
+
+/* ログインフォームを中央寄せ＆幅を半分くらいに */
+.loginCenter {
+  height: 100%;
+  display: flex;
+  align-items: center; /* 縦中央 */
+  justify-content: center; /* 横中央 */
+}
+
+  .loginCenter .panel {
+    width: min(760px, 50%); /* ★半分くらい */
+    max-width: 92vw;
+  }
