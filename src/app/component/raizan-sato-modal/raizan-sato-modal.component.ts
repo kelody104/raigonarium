@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ModalService } from 'service/modal.service';
 import { RaizanAuthService, RaizanMember } from 'service/raizan-auth.service';
 
+// ★ここだけ配置に合わせて直してください
+import { RaizanProgressModalComponent } from 'component/raizan-progress-modal/raizan-progress-modal.component';
+
+
 export type RaizanSatoResult =
   | { action: 'CLOSE' }
   | { action: 'OPEN_TOURNAMENT_HALL'; member?: RaizanMember };
@@ -20,6 +24,7 @@ export class RaizanSatoModalComponent implements OnInit {
   error = '';
 
   member: RaizanMember | null = null;
+  season: number | null = null;
 
   constructor(
     private modalService: ModalService,
@@ -28,6 +33,7 @@ export class RaizanSatoModalComponent implements OnInit {
 
   ngOnInit(): void {
     this.tryAutoLogin();
+    this.loadSeason();
   }
 
   private async tryAutoLogin() {
@@ -38,6 +44,23 @@ export class RaizanSatoModalComponent implements OnInit {
     this.password = saved.password;
 
     await this.login(true);
+  }
+
+  private async loadSeason() {
+    try {
+      const url = `https://mitarashi.link/api/sheet-proxy.php?action=season`;
+      const r = await fetch(url);
+      const t = await r.text();
+      const j = JSON.parse(t);
+
+      if (!j.ok) throw new Error(j.error || 'getSeason failed');
+
+      const n = Number(j.season);
+      this.season = Number.isFinite(n) ? n : null; // ★NaNならnullへ
+    } catch (e) {
+      console.warn('loadSeason failed', e);
+      this.season = null;
+    }
   }
 
   async login(isAuto = false) {
@@ -65,6 +88,12 @@ export class RaizanSatoModalComponent implements OnInit {
     this.member = null;
     this.password = '';
     this.auth.clearSavedCredentials();
+  }
+
+  async openProgress(playerId?: string) {
+    const pid = String(playerId ?? this.member?.playerId ?? '').trim();
+    if (!pid) return;
+    await this.modalService.open(RaizanProgressModalComponent, { playerId: pid });
   }
 
   goTournamentHall() {

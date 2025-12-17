@@ -46,6 +46,7 @@ import { SheetEditorModalComponent } from 'component/sheet-editor-modal/sheet-ed
 import { TournamentHallModalComponent } from './component/tournament-hall-modal/tournament-hall-modal.component';
 import { TournamentBoardModalComponent } from './component/tournament-board-modal/tournament-board-modal.component';
 import { RaizanSatoModalComponent } from './component/raizan-sato-modal/raizan-sato-modal.component';
+import { RaizanProgressModalComponent } from './component/raizan-progress-modal/raizan-progress-modal.component';
 
 import { DraggableDirective } from 'directive/draggable.directive';
 import { MovableDirective } from 'directive/movable.directive';
@@ -115,6 +116,7 @@ import { AppComponent } from './app.component';
     TournamentHallModalComponent,
     TournamentBoardModalComponent,
     RaizanSatoModalComponent,
+    RaizanProgressModalComponent,
   ],
   imports: [
     BrowserModule,

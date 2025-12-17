@@ -2,7 +2,7 @@
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="header">
-      <div class="title">雷山の里</div>
+      <div class="title">雷山の里（シーズン{{ season != null ? season : '' }}）</div>
 
       <button *ngIf="member;" (click)="logout()" [disabled]="isBusy">ログアウト</button>
     </div>
@@ -10,13 +10,15 @@
     <div class="body">
       <div *ngIf="member; else loginForm" class="panel">
         <div class="line">
-          <span class="label">ログイン中：{{ member.familyName }} </span>
-          <span class="value">{{ member.playerName || member.playerId }}　</span>
+          <span class="label">ログイン中：</span>
+          <span class="value">{{ member.familyName }} {{ member.playerName || member.playerId }}　</span>
           <span class="sub">段位：{{ member.rank }}　</span>
-          <span class="sub">所属家門：{{ member.familyName }}家　</span>
-          <span class="sub">所属地域：{{ member.region }}　</span>
-          <span class="sub">今季獲得Ｒポイント：9999　</span>
-          <span class="sub">今季レート：9999　</span>
+          <span class="sub">所属：{{ member.familyName }}家　</span>
+          <span class="sub">地域：{{ member.region }}　</span>
+          <span class="sub">推し雷神：{{ member?.raijin || '（未設定）' }}</span>
+          <span class="sub">今期獲得Rポイント：{{ member.rPoint ?? 0 }}</span>
+          <span class="sub">今期Sレート：{{ member.rate ?? 0 }}</span>
+          <button class="progressBtn" (click)="openProgress()" [disabled]="isBusy || !member">プログレス</button>
         </div>
         <hr />
         参加中の大会：
@@ -73,7 +75,7 @@
 
             <div class="row">
               <div class="label">雷人ID</div>
-              <input [(ngModel)]="playerId" placeholder="例）t001" autocomplete="username" />
+              <input [(ngModel)]="playerId" placeholder="例）001" autocomplete="username" />
             </div>
 
             <div class="row">

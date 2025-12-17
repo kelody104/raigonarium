@@ -1,0 +1,165 @@
+<div class="overlay">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="header">
+      <div class="title">
+        雷轟プログレス
+      </div>
+
+      <button class="icon-btn" (click)="close()" [disabled]="isBusy" aria-label="close">×</button>
+    </div>
+
+    <div class="body">
+
+      <!-- ★ローディング中は中身を一切表示しない -->
+      <ng-container *ngIf="!isBusy; else loadingTpl">
+
+        <div *ngIf="error" class="error">{{ error }}</div>
+
+        <div *ngIf="!error" class="grid">
+          <!-- LEFT -->
+          <div class="left">
+
+            <div class="panel">
+              <div class="line">
+                <span class="label">雷名：</span>
+                <span class="value">{{ member?.familyName }} {{ member?.playerName || playerId }}</span>
+
+                <span class="sub">段位：{{ member?.rank }}</span>
+                <span class="sub">所属：{{ member?.familyName }}家</span>
+                <span class="sub">地域：{{ member?.region }}</span>
+                <span class="sub">推し雷神：{{ member?.raijin || '（未設定）' }}</span>
+                <span class="sub">今期獲得Rポイント：{{ member?.rPoint ?? 0 }}</span>
+                <span class="sub">今期Sレート：{{ member?.rate ?? 0 }}</span>
+              </div>
+            </div>
+
+            <div class="panel section">
+              <div class="sectionTitle">獲得称号</div>
+
+              <div *ngIf="titleChips.length === 0" class="muted">
+                （獲得称号なし）
+              </div>
+
+              <div class="chips">
+                <button class="chip" *ngFor="let c of titleChips">
+                  {{ c.name }}
+                </button>
+              </div>
+            </div>
+
+            <!-- 1/3 × 3 -->
+            <div class="triple">
+
+              <!-- 大会成績 -->
+              <div class="panel section">
+                <div class="sectionTitle">大会成績</div>
+
+                <div *ngIf="tournamentResults.length === 0" class="muted">
+                  （大会結果なし）
+                </div>
+
+                <div *ngIf="tournamentResults.length > 0" class="tableWrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>大会名</th>
+                        <th class="rank">結果</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let r of tournamentResults">
+                        <td>{{ r.tournamentName }}</td>
+                        <td class="rank">{{ rankLabel(r.rank) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 全シーズンRポイント -->
+              <div class="panel section">
+                <div class="sectionTitle">シーズン別Rポイント</div>
+
+                <div *ngIf="allSeasonRPoints.length === 0" class="muted">
+                  （データなし）
+                </div>
+
+                <div *ngIf="allSeasonRPoints.length > 0" class="listWrap">
+                  <div class="miniRow" *ngFor="let it of allSeasonRPoints">
+                    <div class="miniName">シーズン{{ it.season }}</div>
+                    <div class="miniVal">{{ it.value }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 全シーズンレート -->
+              <div class="panel section">
+                <div class="sectionTitle">シーズン別レート</div>
+
+                <div *ngIf="allSeasonRates.length === 0" class="muted">
+                  （データなし）
+                </div>
+
+                <div *ngIf="allSeasonRates.length > 0" class="listWrap">
+                  <div class="miniRow" *ngFor="let it of allSeasonRates">
+                    <div class="miniName">シーズン{{ it.season }}</div>
+                    <div class="miniVal">{{ it.value }}</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="right">
+            <div class="panel rightPanel">
+              <div class="rightHeader">
+                <div class="sectionTitle">完成役グラフ</div>
+
+                <label class="toggle">
+                  <input type="checkbox" [(ngModel)]="showAllYaku" />
+                  全表示
+                </label>
+              </div>
+
+              <div *ngIf="visibleYakuBars.length === 0" class="muted">
+                （達成済みの役がありません）
+              </div>
+
+              <div class="bars">
+                <div class="barRow" *ngFor="let b of visibleYakuBars">
+                  <div class="barName">{{ b.name }}</div>
+                  <div class="barTrack">
+                    <div class="barFill" [style.width.%]="barWidthPct(b.count)"></div>
+                  </div>
+                  <div class="barVal">{{ b.count }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </ng-container>
+
+      <!-- ★raizan-sato風ローディング -->
+      <ng-template #loadingTpl>
+        <div class="progressLoading" aria-live="polite">
+          <div class="orbitWrap">
+            <div class="loadingLabel">Loading...</div>
+
+            <div class="dots">
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+              <span class="dot">・</span><span class="dot">・</span><span class="dot">・</span><span class="dot">・</span>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+    </div>
+
+  </div>
+</div>

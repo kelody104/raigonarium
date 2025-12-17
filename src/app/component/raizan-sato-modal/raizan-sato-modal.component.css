@@ -53,6 +53,20 @@
     z-index: 1;
   }
 
+  /*.modal::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;*/ /* 同じでOK。重なり順は after が上になります */
+    /*background-image: url("/assets/images/raigo/raigo.png");*/ /* ★2枚目 */
+    /*background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30% auto;*/ /* ★ここでサイズ調整 */
+    /*opacity: 0.3;*/ /* ★薄さ調整 */
+    /*filter: brightness(0) invert(1) contrast(1.1);
+    pointer-events: none;
+  }*/
+
 .header {
   flex: 0 0 auto;
   display: flex;
