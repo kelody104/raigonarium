@@ -9,6 +9,8 @@ function doGet(e) {
 
     if (action === 'season') return getSeason_();
     if (action === 'tournaments') return getTournaments_();
+    if (action === 'progress') return getProgress_(e); // ★追加
+
     if (action === 'entries') return getEntriesByTournament_(e);
     if (action === 'entry') return getEntry_(e);
     if (action === 'swiss') return getSwiss_(e);
@@ -26,6 +28,7 @@ function doGet(e) {
     });
   }
 }
+
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -47,6 +50,11 @@ function doPost(e) {
 
     // ★ season を POST でも許可（フロントを統一しやすい）
     if (action === 'season') return getSeason_();
+
+    // ★追加：progress を POST でも許可（フロント統一しやすい）
+    if (action === 'progress') {
+      return getProgress_({ parameter: { playerId: body.playerId } });
+    }
 
     // ★ログイン（関数名揺れも吸収）
     if (action === 'login' || action === 'raizanlogin') {
@@ -70,7 +78,7 @@ function doPost(e) {
       ok: false,
       error: 'Unknown action',
       action: actionRaw,
-      allowed: ['season', 'login', 'raizanLogin', 'append', 'update', 'uploadLog', 'updateSwissLog'],
+      allowed: ['season', 'login', 'raizanLogin', 'progress', 'append', 'update', 'uploadLog', 'updateSwissLog'],
     });
 
   } catch (err) {

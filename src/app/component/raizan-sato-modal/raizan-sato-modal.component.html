@@ -4,7 +4,10 @@
     <div class="header">
       <div class="title">雷山の里（シーズン{{ season != null ? season : '' }}）</div>
 
-      <button *ngIf="member;" (click)="logout()" [disabled]="isBusy">ログアウト</button>
+      <div class="header-actions">
+        <button *ngIf="member;" (click)="logout()" [disabled]="isBusy">ログアウト</button>
+        <button class="icon-btn" (click)="close()" title="閉じる" aria-label="閉じる">×</button>
+      </div>
     </div>
 
     <div class="body">
@@ -21,45 +24,34 @@
           <button class="progressBtn" (click)="openProgress()" [disabled]="isBusy || !member">プログレス</button>
         </div>
         <hr />
-        参加中の大会：
-        <div class="menu">
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2026</button>
+        <div class="tournament-area">
+          <div class="tournament-head">
+            <div class="tournament-title">大会一覧</div>
+            <button class="refresh-btn" (click)="loadTournamentsAndMarkJoined()" [disabled]="isLoadingTournaments">
+              更新
+            </button>
+          </div>
+
+          <div class="hint" *ngIf="isLoadingTournaments">読み込み中...</div>
+          <div class="error" *ngIf="tournamentError">{{ tournamentError }}</div>
+
+          <ng-container *ngFor="let g of groups">
+            <div class="group" *ngIf="g.tournaments.length > 0">
+              <div class="group-title">{{ g.title }}：</div>
+
+              <div class="btn-row">
+                <button class="tbtn"
+                        *ngFor="let t of g.tournaments"
+                        (click)="openTournamentDetail(t)"
+                        [class.joined]="isJoined(t)"
+                        [attr.title]="t.tournamentName">
+                  <span class="badge" *ngIf="eventTypeLabel(t)">【{{ eventTypeLabel(t) }}】</span>
+                  <span class="name">{{ t.tournamentName }}</span>
+                </button>
+              </div>
+            </div>
+          </ng-container>
         </div>
-        <hr />
-        受付中の大会：
-        <div class="menu">
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2026</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026夏</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2026</button>
-        </div>
-        <hr />
-        大会開始前の大会：
-        <div class="menu">
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026夏</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2026</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】サテライト支部大会2026秋</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2026</button>
-        </div>
-        <hr />
-        過去の大会：
-        <div class="menu">
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2025</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2025</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】群馬支部大会2025</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2025</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2025</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2024</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2024</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】群馬支部大会2024</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2024</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2024</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】新春オンライン大会2023</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】桜花杯2023</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公認大会】千葉支部大会2023</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】蓮花杯2023</button>
-          <button (click)="goTournamentHall()" [disabled]="isBusy">【公式大会】六花杯2023</button>
-        </div>
-        <hr />
         <!--<div class="note">
     ※ここに「雷轟コミュニティ情報」を今後追加していく想定ああああああああああああああああああああああああああああああああああああああああああああああ
   </div>-->

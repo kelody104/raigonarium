@@ -1,0 +1,232 @@
+:host {
+  display: block;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,0.20);
+}
+
+.modal {
+  width: min(1100px, 96vw);
+  height: min(760px, 90vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(20,20,24,0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.55);
+  color: rgba(255,255,255,0.92);
+  position: relative;
+}
+
+  .modal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url("/assets/images/raigo/raijin/6.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60% auto;
+    opacity: 0.20;
+    pointer-events: none;
+  }
+
+  .modal > * {
+    position: relative;
+    z-index: 1;
+  }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+}
+
+.title {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+  .icon-btn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.panel {
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+}
+
+/* 大会名ライン */
+.name-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.name {
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-btn {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+  .action-btn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+  .action-btn:disabled {
+    opacity: 0.60;
+    cursor: not-allowed;
+  }
+
+  .action-btn.entry,
+  .action-btn.enter {
+    border-color: rgba(80,170,255,0.85);
+    background: rgba(40,120,255,0.22);
+  }
+
+  .action-btn.entered {
+    border-color: rgba(80,170,255,0.35);
+    background: rgba(40,120,255,0.10);
+  }
+
+  .action-btn.result {
+    border-color: rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06);
+  }
+
+/* 行レイアウト */
+.row {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.row-1 {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+/* 2:1:1 */
+.row-2 {
+  grid-template-columns: 1fr 2fr;
+}
+/* 1:2 */
+.row-3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.row-4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.row-5 {
+  grid-template-columns: 1fr;
+}
+
+.cell {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+}
+
+.k {
+  opacity: 0.85;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.v {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.link {
+  color: rgba(170,210,255,0.95);
+  text-decoration: none;
+}
+
+  .link:hover {
+    text-decoration: underline;
+  }
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.close-btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+}
+
+  .close-btn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+@media (max-width: 760px) {
+  .row-1, .row-2, .row-3, .row-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .name-line {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
+}

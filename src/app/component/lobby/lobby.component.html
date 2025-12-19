@@ -77,7 +77,7 @@
   <button (click)="reload()" [disabled]="isReloading">一覧を更新</button>
   <button (click)="showRoomSetting()">新しいルームを作成する</button>
   <!--  <button type="button" (click)="showTournamentRoomSetting()">大会用ルームを作成</button>-->
-  <button (click)="openRaizanSato()">雷山の里</button>
+  <!--<button (click)="openRaizanSato()">雷山の里</button>-->
 
   <hr />
   <ng-container *ngIf="rooms.length">
@@ -135,5 +135,6 @@
                             [tournament]="selectedTournament!"
                             [mode]="enterMode"
                             [entry]="enteredEntry"
-                            (close)="onTournamentBoardClose()">
+                            (close)="onTournamentBoardClose()"
+                            (enteredTable)="onTournamentBoardEnteredTable()">
 </app-tournament-board-modal>

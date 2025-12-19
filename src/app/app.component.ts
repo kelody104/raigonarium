@@ -49,6 +49,7 @@ import { GameConfigService } from 'service/game-config.service';
 import { RaizanSetupService } from 'service/raizan-setup.service';  // ★これを追加
 import { GameTable } from './class/game-table';
 import { GameTableComponent } from './component/game-table/game-table.component';
+import { RaizanSatoModalComponent, RaizanSatoResult } from 'component/raizan-sato-modal/raizan-sato-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -271,7 +272,7 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
     setTimeout(() => {
       // this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
       // this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
-      this.modalService.open(LobbyComponent, { width: 700, height: 400, left: (window.innerWidth - 700) / 2, top: (window.innerHeight - 400) / 2 });
+      //this.modalService.open(LobbyComponent, { width: 700, height: 400, left: (window.innerWidth - 700) / 2, top: (window.innerHeight - 400) / 2 });
     }, 0);
   }
 
@@ -658,6 +659,26 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
       throw new Error('match not found');
     }
     return String(target.matchId);
+  }
+
+  async openRaigoPortal(): Promise<void> {
+    const width = 820;
+    const height = 640;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    const result = await this.modalService.open<RaizanSatoResult>(
+      RaizanSatoModalComponent,
+      { width, height, left, top }
+    );
+
+    if (!result) return;
+
+    // モーダル側で「大会へ」などを押した時の戻り値に応じて動作させる
+    if (result.action === 'OPEN_TOURNAMENT_HALL') {
+      // 既存の「大会エントリー」モーダルへ接続（必要なら member をサービス経由で渡す）
+      this.openSheetEditor();
+    }
   }
 }
 

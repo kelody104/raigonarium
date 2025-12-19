@@ -5,6 +5,7 @@ import { IRoomInfo } from '@udonarium/core/system/network/room-info';
 
 import { TournamentSheetService } from '../../service/tournament-sheet.service';
 import { TournamentViewService } from '../../service/tournament-view.service';
+import { ViewStateService } from '../../service/view-state.service';
 import { BracketCellVM, Entry, SwissRoundVM, Tournament } from '../../models/tournament-models';
 
 @Component({
@@ -19,6 +20,7 @@ export class TournamentBoardModalComponent {
   @Input() entry?: Entry;
 
   @Output() close = new EventEmitter<void>();
+  @Output() enteredTable = new EventEmitter<void>();
 
   swissRounds: SwissRoundVM[] = [];
   bracketCells: BracketCellVM[] = [];
@@ -33,7 +35,8 @@ export class TournamentBoardModalComponent {
 
   constructor(
     private sheet: TournamentSheetService,
-    public view: TournamentViewService
+    public view: TournamentViewService,
+    private viewState: ViewStateService
   ) { }
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
@@ -94,8 +97,18 @@ export class TournamentBoardModalComponent {
 
     await this.enterRoomById(roomId, roomName, password);
 
+    // ★卓へ移動する直前の状態を保存（peer-menu から復帰できる）
+    this.viewState.saveLobbyReturn({
+      kind: 'TOURNAMENT_BOARD',
+      tournament: this.tournament,
+      mode: this.mode,
+      entry: this.entry,
+    });
     // 入室できたら閉じる
     this.close.emit();
+
+    // ロビーモーダルを閉じる（Lobby 側でハンドル）
+    this.enteredTable.emit();
   }
 
   /**

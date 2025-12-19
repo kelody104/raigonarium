@@ -77,6 +77,12 @@
   background: linear-gradient( 180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02) );
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .title {
   font-weight: 800;
   font-size: 18px;
@@ -406,6 +412,73 @@ button {
   --i: 15;
   --a: 337.5deg;
 }
+
+.tournament-area {
+  margin-top: 12px;
+}
+
+.tournament-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tournament-title {
+  font-weight: 700;
+}
+
+.refresh-btn {
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.group {
+  margin-top: 14px;
+}
+
+.group-title {
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+}
+
+  .tbtn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+  .tbtn.joined {
+    /* ★参加している大会は青 */
+    border-color: rgba(80, 170, 255, 0.85);
+    background: rgba(40, 120, 255, 0.22);
+  }
+
+.badge {
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+.name {
+  white-space: nowrap;
+}
+
 
 /* ログインフォームを中央寄せ＆幅を半分くらいに */
 .loginCenter {

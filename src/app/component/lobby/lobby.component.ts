@@ -8,6 +8,7 @@ import { PasswordCheckComponent } from 'component/password-check/password-check.
 import { RoomSettingComponent } from 'component/room-setting/room-setting.component';
 import { TournamentRoomSettingComponent } from '../tournament-room-setting/tournament-room-setting.component';
 import { ModalService } from 'service/modal.service';
+import { ViewStateService } from 'service/view-state.service';
 import { PanelService } from 'service/panel.service';
 import { PeerContext } from '@udonarium/core/system/network/peer-context';
 import { PeerSessionGrade } from '@udonarium/core/system/network/peer-session-state';
@@ -93,6 +94,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   constructor(
     private panelService: PanelService,
     private modalService: ModalService,
+    private viewState: ViewStateService,
     public appConfigService: AppConfigService,
   ) { }
 
@@ -106,6 +108,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
         this.changeTitle();
       });
     this.reload();
+    this.restoreFromViewState();
   }
 
   private changeTitle() {
@@ -263,4 +266,40 @@ export class LobbyComponent implements OnInit, OnDestroy {
   onTournamentBoardClose() {
     this.isTournamentBoardOpen = false;
   }
+  onTournamentBoardEnteredTable() {
+    // 卓へ移動したらロビーモーダル自体を閉じる（復帰用スナップショットは TournamentBoard 側で保存済み）
+    this.modalService.resolve();
+  }
+
+  private restoreFromViewState() {
+    const snap = this.viewState.consume();
+    if (!snap || snap.kind !== 'LOBBY_RETURN') return;
+
+    const target = snap.target;
+
+    // テンプレート/子コンポーネント生成後に開く
+    setTimeout(() => {
+      if (target.kind === 'RAIZAN_SATO') {
+        this.openRaizanSato();
+        return;
+      }
+
+      if (target.kind === 'TOURNAMENT_HALL') {
+        this.isTournamentHallOpen = true;
+        setTimeout(() => (this as any).tournamentHall?.onOpen?.(), 0);
+        return;
+      }
+
+      if (target.kind === 'TOURNAMENT_BOARD') {
+        this.selectedTournament = target.tournament;
+        this.enterMode = target.mode;
+        this.enteredEntry = target.entry;
+
+        this.isTournamentBoardOpen = true;
+        setTimeout(() => (this as any).tournamentBoard?.onOpen?.(), 0);
+        return;
+      }
+    }, 0);
+  }
+
 }

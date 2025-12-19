@@ -11,6 +11,7 @@ import { LobbyComponent } from 'component/lobby/lobby.component';
 import { AppConfig, AppConfigService } from 'service/app-config.service';
 import { ModalService } from 'service/modal.service';
 import { PanelService } from 'service/panel.service';
+import { ViewStateService } from 'service/view-state.service';
 
 @Component({
   selector: 'peer-menu',
@@ -31,10 +32,14 @@ export class PeerMenuComponent implements OnInit, OnDestroy, AfterViewInit {
   get config(): AppConfig { return AppConfigService.appConfig; }
   get canUsePrivateSession(): boolean { return this.config.backend.mode == 'skyway'; }
 
+  // snapshot$ は async pipe で購読して change detection を確実に走らせる
+  get snapshot$() { return this.viewState.snapshot$; }
+
   constructor(
     private ngZone: NgZone,
     private modalService: ModalService,
     private panelService: PanelService,
+    private viewState: ViewStateService,
     public appConfigService: AppConfigService
   ) { }
 
@@ -71,6 +76,11 @@ export class PeerMenuComponent implements OnInit, OnDestroy, AfterViewInit {
     if (peer.isRoom) return;
     ObjectStore.instance.clearDeleteHistory();
     Network.connect(peer);
+  }
+
+  returnToRaizan() {
+    // ViewStateService に保存されている『最後に閉じたモーダル』へ復帰します
+    this.showLobby();
   }
 
   showLobby() {
