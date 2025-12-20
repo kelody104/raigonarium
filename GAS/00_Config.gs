@@ -1,6 +1,6 @@
 // 00_Config.gs
-const ENTRIES_SHEET = 'entries';
-const TOURNAMENTS_SHEET = 'tournaments';
+const ENTRIES_SHEET = '参加者管理';
+const TOURNAMENTS_SHEET = '大会管理';
 
 const SWISS_SHEET = 'swissMatches';
 const BRACKET_SHEET = 'bracketMatches';
@@ -16,12 +16,14 @@ const TOURNAMENT_RESULTS_SHEET = '大会結果管理';
 const TOURNAMENT_LOG_FOLDER_ID = '1x9AMvGY4q1i4k1jUBZ0rtBxgut955QNj';
 
 // 固定列数（現状仕様）
-const ENTRY_COLS = 24;   // entryTime, tournamentId, playerId, playerName, item1..20
-const TOURN_COLS = 22;   // tournamentId, tournamentName, label1..20
-const SWISS_COLS = 10;   // matchId..logZipUrl
-const BRACKET_COLS = 21; // matchId..seed2
+// ★参加者管理：entryId, tournamentId, playerId, role, active, item1..item10 = 15列
+const ENTRY_COLS = 15;
 
-// 任意：公開書き込みを防ぐならトークン（空なら無効）
+// ★大会管理：A..O（画像の通り）= 15列
+const TOURN_COLS = 17;
+
+const SWISS_COLS = 10;
+const BRACKET_COLS = 21;
+
 const API_TOKEN = '';
-
 const BUILD_ID = 'raizan-dev-20251216-01';
