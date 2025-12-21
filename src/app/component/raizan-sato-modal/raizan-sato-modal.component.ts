@@ -3,6 +3,9 @@ import { ModalService } from 'service/modal.service';
 import { RaizanAuthService, RaizanMember } from 'service/raizan-auth.service';
 import { RaizanProgressModalComponent } from 'component/raizan-progress-modal/raizan-progress-modal.component';
 import { RaizanTournamentDetailModalComponent } from 'component/raizan-tournament-detail-modal/raizan-tournament-detail-modal.component';
+import { TournamentBoardModalComponent } from 'component/tournament-board-modal/tournament-board-modal.component';
+import { TournamentDetailResult } from 'component/raizan-tournament-detail-modal/raizan-tournament-detail-modal.component';
+
 
 
 export type RaizanSatoResult =
@@ -237,21 +240,47 @@ export class RaizanSatoModalComponent implements OnInit {
     return '';
   }
 
-async openTournamentDetail(t: any) {
-  const width = 860;
-  const height = 640;
-  const left = (window.innerWidth - width) / 2;
-  const top = (window.innerHeight - height) / 2;
+  async openTournamentDetail(t: any) {
+    const width = 860;
+    const height = 640;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
 
-  await this.modalService.open(
-    RaizanTournamentDetailModalComponent,
-    {
-      tournament: { ...t },
-      isJoined: this.isJoined(t),
-      width, height, left, top
+    const res = await this.modalService.open(
+      RaizanTournamentDetailModalComponent,
+      {
+        tournament: { ...t },
+        isJoined: this.isJoined(t),
+        width, height, left, top
+      }
+    ) as TournamentDetailResult | undefined;
+
+    if (!res) return;
+
+    if (res.action === 'ENTER' || res.action === 'RESULT') {
+      // TournamentBoardModalComponent が期待する形に寄せる（最低限 tournamentId と name）
+      const tournamentForBoard: any = {
+        ...t,
+        tournamentId: String(t.tournamentId ?? ''),
+        name: String(t.tournamentName ?? t.name ?? ''),
+      };
+
+      const joined = this.isJoined(t) && !!this.member?.playerId;
+      const mode = joined ? 'PLAYER' : 'WATCHER';
+      const entry = joined ? ({ playerId: String(this.member!.playerId) } as any) : undefined;
+
+      await this.modalService.open(
+        TournamentBoardModalComponent,
+        {
+          isOpen: true,
+          tournament: tournamentForBoard,
+          mode,
+          entry,
+        }
+      );
     }
-  );
-}
+  }
+
 
 
   // ====== 既存 ======

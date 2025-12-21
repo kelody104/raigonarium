@@ -89,7 +89,6 @@
   background: rgba(255,255,255,0.04);
 }
 
-/* 大会名ライン */
 .name-line {
   display: flex;
   align-items: center;
@@ -107,43 +106,6 @@
   white-space: nowrap;
 }
 
-.action-btn {
-  flex: 0 0 auto;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-  .action-btn:hover {
-    background: rgba(255,255,255,0.10);
-  }
-
-  .action-btn:disabled {
-    opacity: 0.60;
-    cursor: not-allowed;
-  }
-
-  .action-btn.entry,
-  .action-btn.enter {
-    border-color: rgba(80,170,255,0.85);
-    background: rgba(40,120,255,0.22);
-  }
-
-  .action-btn.entered {
-    border-color: rgba(80,170,255,0.35);
-    background: rgba(40,120,255,0.10);
-  }
-
-  .action-btn.result {
-    border-color: rgba(255,255,255,0.16);
-    background: rgba(255,255,255,0.06);
-  }
-
-/* 行レイアウト */
 .row {
   display: grid;
   gap: 10px;
@@ -166,7 +128,6 @@
   grid-template-columns: 1fr 1fr;
 }
 
-/* ★5行目(URL)は横幅めいっぱい */
 .row-5 {
   grid-template-columns: 1fr;
 }
@@ -189,12 +150,40 @@
   font-size: 13px;
 }
 
-/* 文字列はプレーン表示（長文/URLでも折り返す） */
 .plain {
   display: inline;
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.test-btn {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 38px;
+  white-space: nowrap;
+}
+
+  .test-btn:hover {
+    background: rgba(255,255,255,0.10);
+  }
+
+  .test-btn:disabled,
+  .test-btn.disabled {
+    opacity: 0.60;
+    cursor: not-allowed;
+  }
 
 @media (max-width: 760px) {
   .row-1, .row-2, .row-3, .row-4 {
@@ -206,7 +195,7 @@
     align-items: stretch;
   }
 
-  .action-btn {
+  .test-btn {
     width: 100%;
   }
 }

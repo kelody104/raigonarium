@@ -1,29 +1,40 @@
 <div class="overlay" (click)="close()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal"
+       (click)="$event.stopPropagation()"
+       [style.width.px]="width"
+       [style.height.px]="height"
+       [style.left.px]="left"
+       [style.top.px]="top"
+       [style.position]="(left!=null || top!=null) ? 'fixed' : null">
+
     <div class="header">
       <div class="title">大会詳細</div>
-      <button class="icon-btn" (click)="close()" title="閉じる" aria-label="閉じる">×</button>
+
+      <div class="header-actions">
+        <button class="test-btn"
+                type="button"
+                [disabled]="actionDisabled()"
+                [class.disabled]="actionDisabled()"
+                (click)="onActionClick()">
+          {{ actionLabel() }}
+        </button>
+
+        <button class="icon-btn"
+                type="button"
+                (click)="close()"
+                title="閉じる"
+                aria-label="閉じる">
+          ×
+        </button>
+      </div>
     </div>
 
     <div class="body">
       <div class="panel">
-        <!-- 大会名ライン（右端にアクションボタン） -->
         <div class="name-line">
           <div class="name">{{ tournament?.tournamentName || '-' }}</div>
-
-          <button *ngIf="actionKind() !== null"
-                  class="action-btn"
-                  [class.entry]="actionClass()==='entry'"
-                  [class.entered]="actionClass()==='entered'"
-                  [class.enter]="actionClass()==='enter'"
-                  [class.result]="actionClass()==='result'"
-                  [disabled]="actionDisabled()"
-                  (click)="onActionClick()">
-            {{ actionLabel() }}
-          </button>
         </div>
 
-        <!-- 1行目：主催者 / カテゴリー / 参加人数（2:1:1） -->
         <div class="row row-1">
           <div class="cell">
             <div class="k">主催者</div>
@@ -41,7 +52,6 @@
           </div>
         </div>
 
-        <!-- 2行目：大会会場 / 会場住所（1:2） -->
         <div class="row row-2">
           <div class="cell">
             <div class="k">大会会場</div>
@@ -50,13 +60,10 @@
 
           <div class="cell">
             <div class="k">会場住所</div>
-            <div class="v">
-                {{ tournament?.venueAddress }}
-            </div>
+            <div class="v"><span class="plain">{{ venueAddressText || '-' }}</span></div>
           </div>
         </div>
 
-        <!-- 3行目：大会形式 / 足切りライン（1:1） -->
         <div class="row row-3">
           <div class="cell">
             <div class="k">大会形式</div>
@@ -69,7 +76,6 @@
           </div>
         </div>
 
-        <!-- 4行目：大会エントリー期間 / 大会期間（1:1） -->
         <div class="row row-4">
           <div class="cell">
             <div class="k">大会エントリー期間</div>
@@ -82,14 +88,13 @@
           </div>
         </div>
 
-        <!-- 5行目：URL（横幅めいっぱい / 文字列のみ） -->
         <div class="row row-5">
           <div class="cell">
             <div class="k">URL</div>
-            <div class="v">{{ tournament?.url }}
-            </div>
+            <div class="v"><span class="plain">{{ urlText || '-' }}</span></div>
           </div>
         </div>
+
       </div>
     </div>
 
