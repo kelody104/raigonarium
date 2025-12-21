@@ -1,5 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { EntryRow, SheetApiService, TournamentMaster } from 'service/sheet-api.service';
+import { EntryRow, SheetApiService, TournamentRow } from 'service/sheet-api.service';
 
 type EditModel = {
   mode: 'append' | 'update';
@@ -45,7 +45,7 @@ export class SheetEditorModalComponent implements OnInit {
   limit = 50;
 
   // マスタ
-  tournaments: TournamentMaster[] = [];
+  tournaments: TournamentRow[] = [];
 
   // 結果
   rows: EntryRow[] = [];
@@ -165,7 +165,7 @@ export class SheetEditorModalComponent implements OnInit {
     }
   }
 
-  get selectedTournament(): TournamentMaster | null {
+  get selectedTournament(): TournamentRow | null {
     const id = this.edit.tournamentId;
     if (!id) return null;
     return this.tournaments.find(t => t.tournamentId === id) ?? null;

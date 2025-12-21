@@ -1,6 +1,5 @@
 <div class="overlay" (click)="close()">
   <div class="modal" (click)="$event.stopPropagation()">
-
     <div class="header">
       <div class="title">大会詳細</div>
       <button class="icon-btn" (click)="close()" title="閉じる" aria-label="閉じる">×</button>
@@ -8,7 +7,6 @@
 
     <div class="body">
       <div class="panel">
-
         <!-- 大会名ライン（右端にアクションボタン） -->
         <div class="name-line">
           <div class="name">{{ tournament?.tournamentName || '-' }}</div>
@@ -34,12 +32,12 @@
 
           <div class="cell">
             <div class="k">カテゴリー</div>
-            <div class="v">{{ categoryLabel() }}</div>
+            <div class="v">{{ categoryLabel() }}大会</div>
           </div>
 
           <div class="cell">
             <div class="k">参加人数</div>
-            <div class="v">{{ (tournament?.capacity ?? null) !== null ? tournament?.capacity : '-' }}</div>
+            <div class="v">{{ (tournament?.capacity ?? null) !== null ? tournament?.capacity : '-' }}名</div>
           </div>
         </div>
 
@@ -53,15 +51,7 @@
           <div class="cell">
             <div class="k">会場住所</div>
             <div class="v">
-              <ng-container *ngIf="tournament?.venueAddress; else noAddr">
-                <a class="link"
-                   [href]="mapsUrl(tournament?.venueAddress)"
-                   target="_blank" rel="noopener">
-                  {{ tournament?.venueAddress }}
-                </a>
-              </ng-container>
-              <ng-template #noAddr>-</ng-template>
-              <ng-template #noAddr>-</ng-template>
+                {{ tournament?.venueAddress }}
             </div>
           </div>
         </div>
@@ -92,28 +82,14 @@
           </div>
         </div>
 
-        <!-- 5行目：URL（文字列リンク） -->
+        <!-- 5行目：URL（横幅めいっぱい / 文字列のみ） -->
         <div class="row row-5">
-          <div class="cell url-cell">
+          <div class="cell">
             <div class="k">URL</div>
-            <div class="v">
-              <ng-container *ngIf="tournament?.url; else noUrl">
-                <a class="link"
-                   [href]="normalizedUrl(tournament?.url)"
-                   target="_blank" rel="noopener">
-                  {{ tournament?.url }}
-                </a>
-              </ng-container>
-              <ng-template #noUrl>-</ng-template>
-              <ng-template #noUrl>-</ng-template>
+            <div class="v">{{ tournament?.url }}
             </div>
           </div>
         </div>
-
-        <div class="footer">
-          <button class="close-btn" (click)="close()">閉じる</button>
-        </div>
-
       </div>
     </div>
 

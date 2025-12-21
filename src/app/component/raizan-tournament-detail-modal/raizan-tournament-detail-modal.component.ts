@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { ModalService } from 'service/modal.service';
 
 export type TournamentDetailResult =
@@ -10,6 +10,7 @@ export type TournamentDetailResult =
 export type TournamentRow = {
   tournamentId: string;
   tournamentName: string;
+
   organizerName?: string;
   eventType?: string;
 
@@ -30,6 +31,20 @@ export type TournamentRow = {
 
   url?: string;
   status?: string;
+
+  // 揺れ吸収（GAS/シート由来）
+  VenueAddress?: string;
+  venue_address?: string;
+  venueaddress?: string;
+  address?: string;
+
+  URL?: string;
+  Url?: string;
+  uri?: string;
+  link?: string;
+  href?: string;
+
+  labels?: string[];
 };
 
 type ActionKind = 'ENTRY' | 'ENTERED' | 'ENTER' | 'RESULT' | null;
@@ -39,27 +54,47 @@ type ActionKind = 'ENTRY' | 'ENTERED' | 'ENTER' | 'RESULT' | null;
   templateUrl: './raizan-tournament-detail-modal.component.html',
   styleUrls: ['./raizan-tournament-detail-modal.component.css'],
 })
-export class RaizanTournamentDetailModalComponent implements OnInit {
+export class RaizanTournamentDetailModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() tournament: TournamentRow | null = null;
   @Input() isJoined = false;
+
+  /** 表示用（必ず正規化済みの文字列） */
+  venueAddressText = '';
+  urlText = '';
 
   constructor(private modalService: ModalService) { }
 
   ngOnInit(): void {
-    // ModalService が @Input 自動代入しない場合の保険（前回と同様）
+    // ModalService が @Input 自動代入しない場合の保険
     if (!this.tournament) {
       const opt = this.readModalOption();
       if (opt?.tournament) this.tournament = opt.tournament as TournamentRow;
       if (typeof opt?.isJoined === 'boolean') this.isJoined = opt.isJoined;
     }
+    this.normalizeTournament_();
   }
+
+  ngOnChanges(_: SimpleChanges): void {
+    this.normalizeTournament_();
+  }
+
+  ngOnDestroy(): void { }
 
   private readModalOption(): any {
     const ms: any = this.modalService as any;
     const candidates = [
-      ms.option, ms.options, ms.modalOption, ms.modalOptions, ms.openOption, ms.openOptions,
-      ms.data, ms.context, ms.params, ms.param, ms.currentOption,
-    ].filter(x => x && typeof x === 'object');
+      ms.option,
+      ms.options,
+      ms.modalOption,
+      ms.modalOptions,
+      ms.openOption,
+      ms.openOptions,
+      ms.data,
+      ms.context,
+      ms.params,
+      ms.param,
+      ms.currentOption,
+    ].filter((x: any) => x && typeof x === 'object');
 
     for (const c of candidates) {
       if (c?.tournament) return c;
@@ -67,6 +102,62 @@ export class RaizanTournamentDetailModalComponent implements OnInit {
       if (c?.params?.tournament) return c.params;
     }
     return null;
+  }
+
+  /** 空白だけ/ゼロ幅空白も “空” として扱う */
+  private cleanText_(v: any): string {
+    if (v === undefined || v === null) return '';
+    return String(v)
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // ゼロ幅空白系
+      .trim();
+  }
+
+  private pickText_(...cands: any[]): string {
+    for (const v of cands) {
+      const s = this.cleanText_(v);
+      if (s) return s;
+    }
+    return '';
+  }
+
+  /** 会場住所/URL を必ず表示できる形に正規化して保持 */
+  private normalizeTournament_(): void {
+    const t: any = this.tournament as any;
+    if (!t) {
+      this.venueAddressText = '';
+      this.urlText = '';
+      return;
+    }
+
+    // labels に入ってくる可能性がある場合の保険（他候補が全部空の時だけ使う）
+    const labels = Array.isArray(t.labels) ? t.labels : [];
+    const labelAddr = labels.length > 5 ? labels[5] : '';
+    const labelUrl = labels.length > 15 ? labels[15] : '';
+
+    const venueAddress = this.pickText_(
+      t.venueAddress,
+      t.VenueAddress,
+      t.venue_address,
+      t.venueaddress,
+      t.address,
+      labelAddr
+    );
+
+    const url = this.pickText_(
+      t.url,
+      t.URL,
+      t.Url,
+      t.uri,
+      t.link,
+      t.href,
+      labelUrl
+    );
+
+    this.venueAddressText = venueAddress;
+    this.urlText = url;
+
+    // テンプレ反映を確実に（参照更新）
+    this.tournament = { ...t, venueAddress, url } as TournamentRow;
   }
 
   close() {
@@ -86,7 +177,7 @@ export class RaizanTournamentDetailModalComponent implements OnInit {
     if (st === 'RECEPTION') return this.isJoined ? 'ENTERED' : 'ENTRY';
     if (st === 'OPEN') return 'ENTER';
     if (st === 'CLOSE') return 'RESULT';
-    return null; // ANNOUNCEMENT/STAND-BY などは非表示
+    return null;
   }
 
   actionLabel(): string {
@@ -136,18 +227,16 @@ export class RaizanTournamentDetailModalComponent implements OnInit {
     return `スイスドロー ${s} 回戦 + トーナメント ${b} 回戦`;
   }
 
-  // ✅ ③ 足切りライン文言
   topCutLabel(): string {
     const method = String(this.tournament?.topCutMethod || '').trim().toLowerCase();
     const cutRaw = this.tournament?.topCut;
 
-    const cut = (typeof cutRaw === 'number' && !isNaN(cutRaw)) ? cutRaw : Number(cutRaw || 0);
+    const cut = typeof cutRaw === 'number' && !isNaN(cutRaw) ? cutRaw : Number(cutRaw || 0);
     if (!cut || cut <= 0) return '-';
 
     if (method === 'rank') return `成績上位${cut}名`;
     if (method === 'wins') return `${cut}勝以上`;
 
-    // 保険（未知）
     return `上位 ${cut}`;
   }
 
@@ -163,18 +252,5 @@ export class RaizanTournamentDetailModalComponent implements OnInit {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return String(iso);
     return d.toLocaleString('ja-JP');
-  }
-
-  mapsUrl(address?: string): string {
-    const a = String(address || '').trim();
-    if (!a) return '';
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`;
-  }
-
-  normalizedUrl(url?: string): string {
-    const u = String(url || '').trim();
-    if (!u) return '';
-    if (/^https?:\/\//i.test(u)) return u;
-    return `https://${u}`;
   }
 }

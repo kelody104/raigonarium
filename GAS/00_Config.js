@@ -1,4 +1,5 @@
 // 00_Config.gs
+//test
 const ENTRIES_SHEET = '参加者管理';
 const TOURNAMENTS_SHEET = '大会管理';
 

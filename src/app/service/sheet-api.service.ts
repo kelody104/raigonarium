@@ -1,9 +1,33 @@
 import { Injectable } from '@angular/core';
 
-export type TournamentMaster = {
+/** GAS(getTournaments_) が返す大会1行（大会詳細モーダルで使う分も含む） */
+export type TournamentRow = {
   tournamentId: string;
   tournamentName: string;
-  labels: string[]; // 20個
+
+  organizerName?: string;
+  eventType?: string;
+
+  eventVenue?: string;
+  venueAddress?: string;
+
+  receptionStartDate?: string;
+  receptionEndDate?: string;
+  tournamentStartDate?: string;
+  tournamentEndDate?: string;
+
+  capacity?: number;
+  swissMaxRound?: number;
+  bracketMaxRound?: number;
+
+  topCutMethod?: string;
+  topCut?: number;
+
+  url?: string;
+  status?: string;
+
+  // 既存側が labels を参照していても壊れないように残す（使ってなければ無視でOK）
+  labels?: string[];
 };
 
 export type EntryRow = {
@@ -54,19 +78,22 @@ export type BracketMatchRow = {
 
 @Injectable({ providedIn: 'root' })
 export class SheetApiService {
-  private readonly baseUrl = 'https://mitarashi.link/api/sheet-proxy.php'; // :contentReference[oaicite:2]{index=2}
-  private readonly token: string | null = null; // :contentReference[oaicite:3]{index=3}
+  private readonly baseUrl = 'https://mitarashi.link/api/sheet-proxy.php';
+  private readonly token: string | null = null;
 
-  async listTournaments(): Promise<TournamentMaster[]> {
-    const url = `${this.baseUrl}?action=tournaments&_=${Date.now()}`; // :contentReference[oaicite:4]{index=4}
+  /** 大会一覧（大会詳細モーダルで使う項目も全部持って返す） */
+  async listTournaments(): Promise<TournamentRow[]> {
+    const url = `${this.baseUrl}?action=tournaments&_=${Date.now()}`;
     const res = await fetch(url, { method: 'GET', cache: 'no-store' });
     if (!res.ok) throw new Error(`tournaments failed: ${res.status}`);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'tournaments error');
-    return (json.tournaments ?? json.rows ?? []) as TournamentMaster[];
+
+    const rows = (json.tournaments ?? json.rows ?? []) as any[];
+    return rows.map(r => this.normalizeTournament_(r));
   }
 
-  // 既存（playerId検索） :contentReference[oaicite:5]{index=5}
+  // 既存（playerId検索）
   async listEntriesByPlayerId(playerId: string, limit = 200): Promise<EntryRow[]> {
     const pid = (playerId || '').trim();
     if (!pid) return [];
@@ -180,5 +207,30 @@ export class SheetApiService {
       throw new Error(`post response is not JSON: ${text.slice(0, 200)}`);
     }
     if (!json.ok) throw new Error(json.error || 'post error');
+  }
+
+  /** 表記ゆれ吸収（保険） */
+  // （ファイル全体の他の部分はそのまま）
+  // normalizeTournament_ だけ差し替え版
+
+  normalizeTournament_(raw: any): TournamentRow {
+    const t: any = { ...(raw || {}) };
+
+    const firstText = (...cands: any[]): string => {
+      for (const v of cands) {
+        if (v === undefined || v === null) continue;
+        const s = String(v).trim();
+        if (s) return s;
+      }
+      return '';
+    };
+
+    // 住所（trimして空白だけなら空扱い）
+    t.venueAddress = firstText(t.venueAddress, t.VenueAddress, t.venue_address, t.venueaddress, t.address);
+
+    // URL（trimして空白だけなら空扱い）
+    t.url = firstText(t.url, t.URL, t.Url, t.uri, t.link, t.href);
+
+    return t as TournamentRow;
   }
 }

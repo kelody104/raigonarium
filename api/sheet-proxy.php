@@ -3,6 +3,8 @@
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
+require_once __DIR__ . '/config.php';
+$API_TOKEN = GAS_API_TOKEN;
 
 // ===== CORS =====
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -25,12 +27,24 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
 header('Content-Type: application/json; charset=utf-8');
 
-// ★GAS WebアプリURL（/execまで）
-//$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/exec';
-$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/dev';
+// ★GAS WebアプリURL（/execまで） ※本番は /exec 推奨
+$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/exec';
+//$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/dev';
 
 // ★許可するリダイレクト先（SSRF対策）
 $ALLOW_HOSTS = ['script.google.com', 'script.googleusercontent.com'];
+
+// ★proxyが持つトークン（ロリポップ想定：config.phpで管理）
+if (!defined('GAS_API_TOKEN') || GAS_API_TOKEN === '') {
+  http_response_code(500);
+  echo json_encode([
+    'ok' => false,
+    'error' => 'proxy token is not configured',
+    'hint' => 'Set GAS_API_TOKEN in config.php',
+  ], JSON_UNESCAPED_UNICODE);
+  exit;
+}
+$API_TOKEN = GAS_API_TOKEN;
 
 /**
  * JSONっぽいかの判定（Content-Type優先、ダメなら先頭文字で推測）
@@ -68,7 +82,7 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
       CURLOPT_HTTPHEADER => [
         'Accept: application/json',
         'Content-Type: application/json; charset=utf-8',
-        'User-Agent: mitarashi-proxy/1.1',
+        'User-Agent: mitarashi-proxy/1.2',
       ],
       CURLOPT_HEADERFUNCTION => function($ch, $headerLine) use (&$respHeaders) {
         $len = strlen($headerLine);
@@ -76,7 +90,6 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
         if (count($parts) === 2) {
           $name = strtolower(trim($parts[0]));
           $value = trim($parts[1]);
-          // 同名ヘッダは最後の値で上書き（Location等）
           $respHeaders[$name] = $value;
         }
         return $len;
@@ -96,7 +109,6 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
       $eno = curl_errno($ch);
       curl_close($ch);
 
-      // ここはプロキシ自身の失敗なので 502
       return [502, json_encode([
         'ok' => false,
         'error' => 'proxy curl failed',
@@ -112,7 +124,6 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
     if (in_array($code, [301, 302, 303, 307, 308], true) && isset($respHeaders['location'])) {
       $loc = $respHeaders['location'];
 
-      // 相対Location対策
       if (strpos($loc, 'http') !== 0) {
         $p = parse_url($url);
         $scheme = $p['scheme'] ?? 'https';
@@ -122,7 +133,6 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
 
       $host = parse_url($loc, PHP_URL_HOST) ?? '';
       if (!in_array($host, $ALLOW_HOSTS, true)) {
-        // SSRF防止：許可ホスト以外は拒否（ただしJSONで返す）
         return [200, json_encode([
           'ok' => false,
           'error' => 'redirected to disallowed host',
@@ -131,12 +141,10 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
         ], JSON_UNESCAPED_UNICODE)];
       }
 
-      // POST + (301/302/303) はGETに落とす（ブラウザ挙動）
       if ($m === 'POST' && in_array($code, [301, 302, 303], true)) {
         $m = 'GET';
         $b = null;
       }
-      // 307/308 はメソッド維持（そのまま）
 
       $url = $loc;
       continue;
@@ -147,7 +155,6 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
 
     if (!looks_like_json($ct, $res)) {
       $trim = ltrim($res);
-      // 上流のHTML/ログイン画面/エラーページ等：502にせず、200でJSON化して返す
       return [200, json_encode([
         'ok' => false,
         'error' => 'non-JSON response from upstream',
@@ -158,11 +165,9 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
       ], JSON_UNESCAPED_UNICODE)];
     }
 
-    // 正常：上流のステータスは基本維持（ただし0なら200）
     return [$code ?: 200, $res];
   }
 
-  // redirect loop
   return [200, json_encode([
     'ok' => false,
     'error' => 'redirect loop',
@@ -171,8 +176,19 @@ function proxy_request($method, $url, $body, $ALLOW_HOSTS) {
 
 // ===== dispatch =====
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+// ★ここが肝：query をパースして token を強制付与（クライアントtokenは無視）
 $qs = $_SERVER['QUERY_STRING'] ?? '';
-$url = $GAS_URL . ($qs ? ('?' . $qs) : '');
+$params = [];
+if ($qs !== '') {
+  parse_str($qs, $params);
+}
+// 改ざん防止：クライアントから token が来ても捨てる（上書き）
+$params['token'] = $API_TOKEN;
+
+// クエリ再構築
+$qs2 = http_build_query($params);
+$url = $GAS_URL . ($qs2 ? ('?' . $qs2) : '');
 
 if ($method === 'GET') {
   [$code, $res] = proxy_request('GET', $url, null, $ALLOW_HOSTS);

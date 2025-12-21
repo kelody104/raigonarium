@@ -153,11 +153,11 @@
 .row-1 {
   grid-template-columns: 2fr 1fr 1fr;
 }
-/* 2:1:1 */
+
 .row-2 {
   grid-template-columns: 1fr 2fr;
 }
-/* 1:2 */
+
 .row-3 {
   grid-template-columns: 1fr 1fr;
 }
@@ -166,6 +166,7 @@
   grid-template-columns: 1fr 1fr;
 }
 
+/* ★5行目(URL)は横幅めいっぱい */
 .row-5 {
   grid-template-columns: 1fr;
 }
@@ -188,33 +189,12 @@
   font-size: 13px;
 }
 
-.link {
-  color: rgba(170,210,255,0.95);
-  text-decoration: none;
+/* 文字列はプレーン表示（長文/URLでも折り返す） */
+.plain {
+  display: inline;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-
-  .link:hover {
-    text-decoration: underline;
-  }
-
-.footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 14px;
-}
-
-.close-btn {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: inherit;
-  cursor: pointer;
-}
-
-  .close-btn:hover {
-    background: rgba(255,255,255,0.10);
-  }
 
 @media (max-width: 760px) {
   .row-1, .row-2, .row-3, .row-4 {

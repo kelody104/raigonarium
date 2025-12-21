@@ -7,9 +7,16 @@ function getSheet_(name) {
 }
 
 function parseBody_(e) {
-  const raw = e?.postData?.contents || '';
-  if (!raw) return {};
-  try { return JSON.parse(raw); } catch { return {}; }
+  const raw = String(e?.postData?.contents || '').trim();
+
+  if (raw) {
+    try { return JSON.parse(raw); } catch (_) {}
+  }
+
+  // フォールバック：フォーム送信やExecution APIっぽい形
+  const p = e?.parameter || {};
+  // token はクエリ側で見る運用なので、bodyには入れなくてOK
+  return { ...p };
 }
 
 function json_(obj) {
