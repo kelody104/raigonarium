@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "deploy": "clasp push && clasp deploy -i AKfycbxjt77yQ98yQROYKeA2aYK8X5hWKQjdkPhDi0RLbtf0dPjb3uwLM3jLB0d7U0_A-WjR1A -d \"update\""
+  }
+}

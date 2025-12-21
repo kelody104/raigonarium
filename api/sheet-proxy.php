@@ -28,7 +28,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 header('Content-Type: application/json; charset=utf-8');
 
 // ★GAS WebアプリURL（/execまで） ※本番は /exec 推奨
-$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/exec';
+$GAS_URL = 'https://script.google.com/macros/s/AKfycbxjt77yQ98yQROYKeA2aYK8X5hWKQjdkPhDi0RLbtf0dPjb3uwLM3jLB0d7U0_A-WjR1A/exec';
 //$GAS_URL = 'https://script.google.com/macros/s/AKfycbyGKRaz1BIXUXH--l9BFC_BFhfVIH2NhZXr8Pe1HQwt0jIFIz8MECfOJe8_-go42uetkg/dev';
 
 // ★許可するリダイレクト先（SSRF対策）

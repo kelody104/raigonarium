@@ -77,6 +77,7 @@ function doPost(e) {
     }
 
     if (action === 'append') return appendEntry_(body);
+    if (action === 'cancel') return cancelEntry_(body);
     if (action === 'update') return updateEntry_(body);
     if (action === 'uploadlog') return uploadLog_(body);
     if (action === 'updateswisslog') return updateSwissLog_(body);
@@ -85,7 +86,7 @@ function doPost(e) {
       ok: false,
       error: 'Unknown action',
       action: actionRaw,
-      allowed: ['ping','season','login','raizanLogin','progress','append','update','uploadLog','updateSwissLog'],
+      allowed: ['ping', 'season', 'login', 'raizanLogin', 'progress', 'append', 'cancel', 'update', 'uploadLog', 'updateSwissLog'],
     });
 
   } catch (err) {

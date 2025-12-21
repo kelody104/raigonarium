@@ -51,7 +51,15 @@ export type TournamentRow = {
   labels?: string[];
 };
 
-type ActionKind = 'BEFORE' | 'STANDBY' | 'ENTRY' | 'ENTERED' | 'ENTER' | 'RESULT';
+type ActionKind = 'BEFORE' | 'STANDBY' | 'ENTRY' | 'CANCEL' | 'ENTER' | 'RESULT';
+
+type AppendEntryResponse = {
+  ok: boolean;
+  entryId?: string;
+  existed?: boolean;
+  error?: string;
+  message?: string;
+};
 
 @Component({
   selector: 'app-raizan-tournament-detail-modal',
@@ -69,6 +77,8 @@ export class RaizanTournamentDetailModalComponent implements OnInit, OnDestroy, 
 
   venueAddressText = '';
   urlText = '';
+
+  private actionBusy = false;
 
   constructor(private modalService: ModalService) { }
 
@@ -159,9 +169,9 @@ export class RaizanTournamentDetailModalComponent implements OnInit, OnDestroy, 
     const st = this.normStatus();
 
     if (st === 'ANNOUNCEMENT') return 'BEFORE';
-    if (st === 'STAND-BY') return 'STANDBY'; // ★追加
+    if (st === 'STAND-BY') return 'STANDBY';
 
-    if (st === 'RECEPTION') return this.isJoined ? 'ENTERED' : 'ENTRY';
+    if (st === 'RECEPTION') return this.isJoined ? 'CANCEL' : 'ENTRY';
     if (st === 'OPEN') return 'ENTER';
     if (st === 'CLOSE') return 'RESULT';
 
@@ -170,39 +180,180 @@ export class RaizanTournamentDetailModalComponent implements OnInit, OnDestroy, 
 
   actionLabel(): string {
     const k = this.actionKind();
-    if (k === 'BEFORE') return '受付前';
-    if (k === 'STANDBY') return '受付終了'; // ★追加
-    if (k === 'ENTRY') return 'エントリーする';
-    if (k === 'ENTERED') return 'エントリー済';
-    if (k === 'ENTER') return '入場する';
+    if (k === 'BEFORE') return '大会受付前';
+    if (k === 'STANDBY') return '受付終了';
+    if (k === 'ENTRY') return this.actionBusy ? 'エントリー中…' : '大会にエントリーする';
+    if (k === 'CANCEL') return this.actionBusy ? '取消中…' : 'エントリーを取り消す';
+    if (k === 'ENTER') return '入場';
     if (k === 'RESULT') return '結果確認';
     return '';
   }
 
   actionDisabled(): boolean {
+    if (this.actionBusy) return true;
     const k = this.actionKind();
-    return k === 'BEFORE' || k === 'ENTERED' || k === 'STANDBY'; // ★追加
+    return k === 'BEFORE' || k === 'STANDBY'; // ★CANCEL は押せる
   }
 
   onActionClick(): void {
     if (this.actionDisabled()) return;
 
     const k = this.actionKind();
-
-    // RECEPTION 未エントリーは click処理空
-    if (k === 'ENTRY') return;
+    if (k === 'ENTRY') { void this.appendEntry_(); return; }
+    if (k === 'CANCEL') { void this.cancelEntry_(); return; }
 
     const tournamentId = String(this.tournament?.tournamentId || '').trim();
     if (!tournamentId) return;
 
-    if (k === 'ENTER') {
-      this.modalService.resolve({ action: 'ENTER', tournamentId } as TournamentDetailResult);
+    if (k === 'ENTER') this.modalService.resolve({ action: 'ENTER', tournamentId });
+    if (k === 'RESULT') this.modalService.resolve({ action: 'RESULT', tournamentId });
+  }
+
+  // ====== エントリー処理 ======
+
+  private getPlayerId_(): string {
+    const opt = this.readModalOption_();
+
+    // 1) Modal option 由来（推奨：open時に渡す）
+    const p1 = this.pickText_(opt?.playerId, opt?.data?.playerId, opt?.params?.playerId);
+    if (p1) return p1;
+
+    // 2) window グローバル（プロジェクト側で置いてる場合）
+    const w: any = window as any;
+    const p2 = this.pickText_(w?.raizanPlayerId, w?.RAIZAN_PLAYER_ID, w?.raizan?.playerId, w?.app?.playerId);
+    if (p2) return p2;
+
+    // 3) localStorage（ログイン後に保存している場合）
+    try {
+      const keys = [
+        'playerId',
+        'raizanPlayerId',
+        'raizan.playerId',
+        'RAIZAN_PLAYER_ID',
+        'raizan_login_playerId',
+      ];
+      for (const k of keys) {
+        const v = this.cleanText_(localStorage.getItem(k));
+        if (v) return v;
+      }
+    } catch (_) { }
+
+    return '';
+  }
+
+  // エントリー取消
+  private async cancelEntry_(): Promise<void> {
+    const tournamentId = this.cleanText_(this.tournament?.tournamentId);
+    const playerId = this.getPlayerId_();
+
+    if (!tournamentId) { alert('tournamentId が取得できませんでした。'); return; }
+    if (!playerId) { alert('playerId が取得できませんでした（ログイン状態を確認してください）。'); return; }
+
+    if (!confirm('エントリーを取り消しますか？')) return;
+
+    this.actionBusy = true;
+    try {
+      const payload = { action: 'cancel', tournamentId, playerId };
+      console.log('[cancelEntry request]', payload);
+
+      const resp = await this.postJson_(payload);
+      console.log('[cancelEntry response]', resp);
+
+      if (!resp || resp.ok !== true) {
+        const lines: string[] = [];
+        lines.push('取消に失敗しました');
+        lines.push(`error: ${resp?.error ?? 'unknown'}`);
+        if (resp?.message) lines.push(`message: ${resp.message}`);
+        if (resp?.stack) console.error('[GAS stack]', resp.stack);
+        alert(lines.join('\n'));
+        return;
+      }
+
+      this.isJoined = false;
+    } finally {
+      this.actionBusy = false;
+    }
+  }
+
+  private proxyUrl_(): string {
+    const opt = this.readModalOption_();
+    const fromOpt = this.pickText_(opt?.proxyUrl, opt?.sheetApiBaseUrl, opt?.baseUrl);
+    if (fromOpt) return fromOpt;
+
+    const w: any = window as any;
+    return String(w?.SHEET_PROXY_URL || w?.RAIZAN_SHEET_PROXY_URL || 'https://mitarashi.link/api/sheet-proxy.php');
+  }
+
+  private async postJson_(payload: any): Promise<any> {
+    const res = await fetch(this.proxyUrl_(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload),
+    });
+
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { ok: false, error: 'invalid_json', message: text };
+    }
+  }
+
+  private async appendEntry_(): Promise<void> {
+    const tournamentId = this.cleanText_(this.tournament?.tournamentId);
+    const playerId = this.getPlayerId_();
+
+    if (!tournamentId) {
+      alert('tournamentId が取得できませんでした。');
+      return;
+    }
+    if (!playerId) {
+      alert('playerId が取得できませんでした（ログイン状態を確認してください）。');
       return;
     }
 
-    if (k === 'RESULT') {
-      this.modalService.resolve({ action: 'RESULT', tournamentId } as TournamentDetailResult);
-      return;
+    this.actionBusy = true;
+    try {
+      const payload = {
+        action: 'append',
+        tournamentId,
+        playerId,
+        role: 'PLAYER',
+        active: true,
+      };
+      console.log('[appendEntry request]', payload);
+
+      const resp = await this.postJson_(payload);
+      console.log('[appendEntry response]', resp);
+
+      if (!resp || resp.ok !== true) {
+        const lines: string[] = [];
+        lines.push('エントリーに失敗しました');
+
+        // GAS/doPost側のエラーコード
+        lines.push(`error: ${resp?.error ?? 'unknown'}`);
+
+        // doPost catchで返している message を見たい
+        if (resp?.message) lines.push(`message: ${resp.message}`);
+
+        // 画面は長くなるので stack は console に出すのがおすすめ
+        if (resp?.stack) {
+          console.error('[GAS stack]', resp.stack);
+        }
+
+        console.error('[appendEntry response]', resp);
+        alert(lines.join('\n'));
+        return;
+      }
+
+
+      // 成功（既に存在でもOK扱い）
+      this.isJoined = true;
+    } catch (e: any) {
+      alert(`エントリー中に例外が発生しました: ${String(e?.message ?? e)}`);
+    } finally {
+      this.actionBusy = false;
     }
   }
 

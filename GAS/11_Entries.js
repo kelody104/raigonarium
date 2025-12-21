@@ -18,7 +18,7 @@ function getEntriesByTournament_(e) {
       tournamentId: String(r[1] || '').trim(),
       playerId: String(r[2] || '').trim(),
       role: String(r[3] || '').trim(),
-      active: String(r[4] || '').trim(), // TRUE/FALSE
+      active: String(r[4] ?? '').trim().toUpperCase(), // TRUE/FALSE (false を潰さない)
       items: r.slice(5, 15).map(v => (v === null || v === undefined) ? '' : String(v)) // item1..10
     }))
     .filter(x => x.tournamentId === tournamentId);
@@ -60,7 +60,7 @@ function getEntry_(e) {
           tournamentId: t,
           playerId: p,
           role: String(r[3] || '').trim(),
-          active: String(r[4] || '').trim(),
+          active: String(r[4] ?? '').trim().toUpperCase(),
           items: r.slice(5, 15).map(v => (v === null || v === undefined) ? '' : String(v))
         }
       });
@@ -90,7 +90,7 @@ function getEntriesByPlayerId_(e) {
       tournamentId: String(r[1] || '').trim(),
       playerId: String(r[2] || '').trim(),
       role: String(r[3] || '').trim(),
-      active: String(r[4] || '').trim(),
+      active: String(r[4] ?? '').trim().toUpperCase(),
       items: r.slice(5, 15).map(v => (v === null || v === undefined) ? '' : String(v))
     }))
     .filter(x => x.playerId === playerId);
