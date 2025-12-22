@@ -38,6 +38,7 @@ function doGet(e) {
     if (action === 'entry') return getEntry_(e);
     if (action === 'swiss') return getSwiss_(e);
     if (action === 'bracket') return getBracket_(e);
+    if (action === 'players') return getPlayers_(e);
 
     return getEntriesByPlayerId_(e);
   } catch (err) {

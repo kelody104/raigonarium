@@ -51,9 +51,9 @@ nav ul {
     text-decoration: none;
   }
 
-  nav ul i.torii-icon,
-  nav ul i.torii-icon::before {
-    color: #e53935 !important;
+  nav ul i.portal-icon,
+  nav ul i.portal-icon::before {
+    color: rgb(0, 148, 255) !important;
   }
 
 /* 既存（使ってるなら残す） */

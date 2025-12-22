@@ -2,7 +2,7 @@
   <div class="modal" (click)="$event.stopPropagation()">
 
     <div class="header">
-      <div class="title">雷山の里（シーズン{{ season != null ? season : '' }}）</div>
+      <div class="title">雷轟ポータル（シーズン{{ season != null ? season : '' }}）</div>
 
       <div class="header-actions">
         <button *ngIf="member;" (click)="logout()" [disabled]="isBusy">ログアウト</button>
@@ -52,18 +52,11 @@
             </div>
           </ng-container>
         </div>
-        <!--<div class="note">
-    ※ここに「雷轟コミュニティ情報」を今後追加していく想定ああああああああああああああああああああああああああああああああああああああああああああああ
-  </div>-->
       </div>
 
       <ng-template #loginForm>
         <div class="loginCenter">
           <div class="panel">
-            <!--<div class="desc">
-        会員ログインすると、雷山の里メニューが使えます。
-        ログインしなくても観戦者として大会会場に入れます。
-      </div>-->
 
             <div class="row">
               <div class="label">雷人ID</div>
@@ -74,8 +67,6 @@
               <div class="label">パスワード</div>
               <input [(ngModel)]="password" type="password" autocomplete="current-password" />
             </div>
-
-
 
             <div *ngIf="error" class="error">{{ error }}</div>
 
@@ -90,7 +81,7 @@
             </div>
           </div>
         </div>
-        <!-- ログイン処理中表示 -->
+
         <div class="loginLoading" *ngIf="isBusy && !member" aria-live="polite">
           <div class="orbitWrap">
             <div class="loadingLabel">Login...</div>
@@ -109,3 +100,12 @@
   </div>
 </div>
 
+<!-- ★常設：tournament-board-modal（isOpen で開く） -->
+<app-tournament-board-modal *ngIf="boardTournament"
+                            [isOpen]="isTournamentBoardOpen"
+                            [tournament]="boardTournament"
+                            [mode]="boardMode"
+                            [entry]="boardEntry"
+                            (close)="onTournamentBoardClose()"
+                            (enteredTable)="onEnteredTableFromBoard()">
+</app-tournament-board-modal>

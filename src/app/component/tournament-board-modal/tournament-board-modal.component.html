@@ -1,4 +1,3 @@
-<!--<div class="overlay" *ngIf="isOpen" (click)="onCancel()">-->
 <div class="overlay" *ngIf="isOpen">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="header">
@@ -12,97 +11,84 @@
       <div class="error" *ngIf="error">{{ error }}</div>
       <div class="loading" *ngIf="loading">読み込み中…</div>
 
-      <div class="split" *ngIf="!loading && !error">
-        <!-- 左：スイス -->
-        <section class="pane">
-          <div class="paneTitle">予選（スイス）</div>
+      <div *ngIf="!loading && !error" class="content">
+        <div class="empty" *ngIf="matches.length === 0">
+          対戦卓がありません。
+        </div>
 
-          <div class="round" *ngFor="let r of swissRounds; trackBy: trackByRound">
-            <div class="roundTitle">R{{ r.round }}</div>
+        <table class="matchTable" *ngIf="matches.length > 0">
+          <thead>
+            <tr>
+              <th class="colRound">Round</th>
+              <th class="colTable">Table</th>
 
-            <div class="card" *ngFor="let c of r.cells; trackBy: trackByCell">
-              <div class="top">
-                <div class="table">{{ c.tableName }}</div>
-                <div class="result">{{ c.result }}</div>
-              </div>
+              <th class="colPid">p1Id</th>
+              <th class="colPlayer">p1（家名/名・段位・レート）</th>
 
-              <div class="players">
-                <div class="player">
-                  <img *ngIf="view.okugiImageUrl(c.p1.okugiPieceId) as img" [src]="img" class="okugi" />
-                  <div class="name">{{ c.p1.name }}</div>
-                  <div class="wins">{{ c.p1.wins ?? 0 }}勝</div>
+              <th class="colPid">p2Id</th>
+              <th class="colPlayer">p2（家名/名・段位・レート）</th>
+
+              <th class="colWins">p1Wins</th>
+              <th class="colWins">p2Wins</th>
+              <th class="colResult">result</th>
+
+              <th class="colActions">操作</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let m of matches; trackBy: trackByMatch">
+              <td class="mono">R{{ m.round }}</td>
+              <td class="mono">
+                {{ m.tableID }}
+                <span class="badge" [class.swiss]="m.kind==='SWISS'" [class.bracket]="m.kind==='BRACKET'">
+                  {{ m.kind === 'SWISS' ? 'Swiss' : 'Bracket' }}
+                </span>
+              </td>
+
+              <td class="mono">{{ m.p1Id }}</td>
+              <td>
+                <div class="pLine" *ngIf="m.p1; else p1empty">
+                  <span class="strong">{{ m.p1.familyName }}</span>
+                  <span>{{ m.p1.playerName }}</span>
+                  <span class="sub">（{{ m.p1.rank }} / {{ m.p1.rate }}）</span>
                 </div>
+                <ng-template #p1empty>
+                  <span class="sub">-</span>
+                </ng-template>
+              </td>
 
-                <div class="vs">vs</div>
-
-                <div class="player">
-                  <img *ngIf="view.okugiImageUrl(c.p2.okugiPieceId) as img" [src]="img" class="okugi" />
-                  <div class="name">{{ c.p2.name }}</div>
-                  <div class="wins">{{ c.p2.wins ?? 0 }}勝</div>
+              <td class="mono">{{ m.p2Id }}</td>
+              <td>
+                <div class="pLine" *ngIf="m.p2; else p2empty">
+                  <span class="strong">{{ m.p2.familyName }}</span>
+                  <span>{{ m.p2.playerName }}</span>
+                  <span class="sub">（{{ m.p2.rank }} / {{ m.p2.rate }}）</span>
                 </div>
-              </div>
+                <ng-template #p2empty>
+                  <span class="sub">-</span>
+                </ng-template>
+              </td>
 
-              <div class="actions">
-                <button class="btn"
-                        *ngIf="c.action==='ENTER'"
-                        [disabled]="!isMyTable(c.tableName)"
-                        (click)="enterTable(c.tableName)">
-                  入室
-                </button>
-                <button class="btn" *ngIf="c.action==='RESULT'" (click)="openResult(c.logZipUrl)">結果</button>
-              </div>
-            </div>
-          </div>
-        </section>
+              <td class="mono center">{{ m.p1Wins }}</td>
+              <td class="mono center">{{ m.p2Wins }}</td>
+              <td class="mono">{{ m.result }}</td>
 
-        <!-- 右：トーナメント -->
-        <section class="pane">
-          <div class="paneTitle">決勝（トーナメント）</div>
+              <td class="actions">
+                <!-- (click) は今は付けない（要望どおり） -->
+                <button class="btn">着席</button>
+                <button class="btn">着席</button>
+                <button class="btn">観戦</button>
+                <button class="btn">結果</button>
+                <button class="btn">結果手動入力</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-          <div class="card" *ngFor="let c of bracketCells; trackBy: trackByCell">
-            <div class="top">
-              <div class="table">{{ c.tableName }} <span class="small">R{{ c.round }}</span></div>
-              <div class="result">{{ c.result }} <span class="small">BO{{ c.bestOf }}</span></div>
-            </div>
-
-            <div class="players">
-              <div class="player">
-                <img *ngIf="view.okugiImageUrl(c.p1.okugiPieceId) as img" [src]="img" class="okugi" />
-                <div class="name">{{ c.p1.name }}</div>
-              </div>
-
-              <div class="vs">vs</div>
-
-              <div class="player">
-                <img *ngIf="view.okugiImageUrl(c.p2.okugiPieceId) as img" [src]="img" class="okugi" />
-                <div class="name">{{ c.p2.name }}</div>
-              </div>
-            </div>
-
-            <div class="bo3" *ngIf="c.bestOf===3">
-              <div class="small">本数：{{ c.p1GameWins ?? 0 }} - {{ c.p2GameWins ?? 0 }}</div>
-            </div>
-
-            <div class="actions">
-              <button class="btn"
-                      *ngIf="c.action==='ENTER'"
-                      [disabled]="!isMyTable(c.tableName)"
-                      (click)="enterTable(c.tableName)">
-                入室
-              </button>
-
-              <button class="btn" *ngIf="c.action==='RESULT' && c.bestOf===1"
-                      (click)="openResult(c.logZipUrl)">
-                結果
-              </button>
-
-              <button class="btn" *ngIf="c.action==='RESULT' && c.bestOf===3"
-                      (click)="openLatestGameResult(c)">
-                結果
-              </button>
-            </div>
-          </div>
-        </section>
+        <div class="note">
+          ※ round は「最新が上」になるように表示しています。
+        </div>
       </div>
     </div>
   </div>

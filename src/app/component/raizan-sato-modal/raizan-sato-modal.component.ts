@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ModalService } from 'service/modal.service';
 import { RaizanAuthService, RaizanMember } from 'service/raizan-auth.service';
 import { RaizanProgressModalComponent } from 'component/raizan-progress-modal/raizan-progress-modal.component';
-import { RaizanTournamentDetailModalComponent } from 'component/raizan-tournament-detail-modal/raizan-tournament-detail-modal.component';
-import { TournamentBoardModalComponent } from 'component/tournament-board-modal/tournament-board-modal.component';
-import { TournamentDetailResult } from 'component/raizan-tournament-detail-modal/raizan-tournament-detail-modal.component';
+import {
+  RaizanTournamentDetailModalComponent,
+  TournamentDetailResult
+} from 'component/raizan-tournament-detail-modal/raizan-tournament-detail-modal.component';
 
-
+import { Entry, Tournament } from '../../models/tournament-models';
 
 export type RaizanSatoResult =
   | { action: 'CLOSE' }
@@ -15,12 +16,11 @@ export type RaizanSatoResult =
 type TournamentRow = {
   tournamentId: string;
   tournamentName: string;
-  organizerName?: string; // ★ organizerId → organizerName
+  organizerName?: string;
   eventType?: string;
   url?: string;
   status?: string;
 
-  // 詳細で使うなら入れておくと型が楽
   eventVenue?: string;
   venueAddress?: string;
   receptionStartDate?: string;
@@ -28,8 +28,10 @@ type TournamentRow = {
   tournamentStartDate?: string;
   tournamentEndDate?: string;
   capacity?: number;
+
   swissMaxRound?: number;
   bracketMaxRound?: number;
+
   topCutMethod?: string;
   topCut?: number;
 };
@@ -58,12 +60,17 @@ export class RaizanSatoModalComponent implements OnInit {
   member: RaizanMember | null = null;
   season: number | null = null;
 
-  // ★追加：大会一覧
   tournaments: TournamentRow[] = [];
   groups: TournamentGroup[] = [];
   joinedTournamentIds = new Set<string>();
   isLoadingTournaments = false;
   tournamentError = '';
+
+  // ★大会会場（tournament-board-modal）制御
+  isTournamentBoardOpen = false;
+  boardTournament: Tournament | null = null;
+  boardMode: 'PLAYER' | 'WATCHER' = 'WATCHER';
+  boardEntry?: Entry;
 
   constructor(
     private modalService: ModalService,
@@ -73,8 +80,6 @@ export class RaizanSatoModalComponent implements OnInit {
   ngOnInit(): void {
     this.tryAutoLogin();
     this.loadSeason();
-
-    // ログイン不要でも大会一覧は見える想定
     this.loadTournamentsAndMarkJoined();
   }
 
@@ -116,7 +121,6 @@ export class RaizanSatoModalComponent implements OnInit {
         this.auth.clearSavedCredentials();
       }
 
-      // ★ログイン後：参加色を更新
       await this.loadTournamentsAndMarkJoined();
     } catch (e: any) {
       this.member = null;
@@ -131,8 +135,6 @@ export class RaizanSatoModalComponent implements OnInit {
     this.member = null;
     this.password = '';
     this.auth.clearSavedCredentials();
-
-    // ★ログアウト後：参加色は入力欄 playerId で判定（空なら全部通常色）
     this.loadTournamentsAndMarkJoined();
   }
 
@@ -146,8 +148,6 @@ export class RaizanSatoModalComponent implements OnInit {
 
   private normalizeStatus(s: string): TournamentGroup['key'] {
     const u = String(s || '').trim().toUpperCase();
-
-    // 既存データの揺れ吸収（画像に START があるので OPEN 扱いに寄せる）
     if (u === 'OPEN' || u === 'START') return 'OPEN';
     if (u === 'STAND-BY' || u === 'STANDBY' || u === 'STAND_BY') return 'STAND-BY';
     if (u === 'RECEPTION') return 'RECEPTION';
@@ -169,7 +169,6 @@ export class RaizanSatoModalComponent implements OnInit {
       buckets[key].push(t);
     }
 
-    // 表示順（要件の5分類）
     this.groups = [
       { key: 'OPEN', title: '開催中の大会', tournaments: buckets['OPEN'] },
       { key: 'RECEPTION', title: '受付中の大会', tournaments: buckets['RECEPTION'] },
@@ -190,42 +189,38 @@ export class RaizanSatoModalComponent implements OnInit {
   }
 
   private getCurrentPlayerIdForMark(): string {
-    // 参加色判定は「ログイン中なら member.playerId」「未ログインなら入力欄 playerId」
-    const pid = String(this.member?.playerId ?? this.playerId ?? '').trim();
-    return pid;
+    return String(this.member?.playerId ?? this.playerId ?? '').trim();
   }
 
   async loadTournamentsAndMarkJoined() {
     this.isLoadingTournaments = true;
     this.tournamentError = '';
     try {
-      // 1) 大会一覧
       const tj = await this.fetchJson(`${this.sheetApiBaseUrl}?action=tournaments`);
       if (!tj.ok) throw new Error(tj.error || 'get tournaments failed');
       this.tournaments = (tj.tournaments ?? []) as TournamentRow[];
 
-      // 2) 参加大会ID（entries から playerId で引く）
       this.joinedTournamentIds.clear();
       const pid = this.getCurrentPlayerIdForMark();
       if (pid) {
-        const ej = await this.fetchJson(`${this.sheetApiBaseUrl}?action=entriesByPlayerId&playerId=${encodeURIComponent(pid)}&limit=1000`);
+        const ej = await this.fetchJson(
+          `${this.sheetApiBaseUrl}?action=entriesByPlayerId&playerId=${encodeURIComponent(pid)}&limit=1000`
+        );
+
         if (ej.ok && Array.isArray(ej.rows)) {
-          if (ej.ok && Array.isArray(ej.rows)) {
-            for (const row of ej.rows) {
-              const tId = String(row?.tournamentId ?? '').trim();
-              if (!tId) continue;
+          for (const row of ej.rows) {
+            const tId = String(row?.tournamentId ?? '').trim();
+            if (!tId) continue;
 
-              const role = String(row?.role ?? '').trim().toUpperCase();
+            const role = String(row?.role ?? '').trim().toUpperCase();
 
-              // active は TRUE/FALSE 文字列 or boolean の両方あり得るので吸収
-              const aRaw = row?.active;
-              const aStr = String(aRaw ?? '').trim().toUpperCase();
-              const isActive = (aRaw === true) || (aStr === '' || aStr === 'TRUE' || aStr === '1');
+            const aRaw = row?.active;
+            const aStr = String(aRaw ?? '').trim().toUpperCase();
+            // legacy：undefined/'' は true 扱い
+            const isActive = (aRaw === true) || (aRaw == null) || (aStr === '' || aStr === 'TRUE' || aStr === '1');
 
-              // ★重要：大会参加の判定は PLAYER かつ active=true のみ
-              if (role === 'PLAYER' && isActive) {
-                this.joinedTournamentIds.add(tId);
-              }
+            if (role === 'PLAYER' && isActive) {
+              this.joinedTournamentIds.add(tId);
             }
           }
         }
@@ -254,73 +249,81 @@ export class RaizanSatoModalComponent implements OnInit {
     return '';
   }
 
-async openTournamentDetail(t: any) {
-  const width = 860;
-  const height = 640;
-  const left = (window.innerWidth - width) / 2;
-  const top = (window.innerHeight - height) / 2;
+  // =========================
+  // detail → board 遷移（ENTER/RESULT）
+  // =========================
+  async openTournamentDetail(t: TournamentRow) {
+    const width = 860;
+    const height = 640;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
 
-  // ログイン中の playerId（未ログインなら空）
-  const pid = String(this.member?.playerId ?? '').trim();
+    const pid = String(this.member?.playerId ?? '').trim();
 
-  const res = await this.modalService.open(
-    RaizanTournamentDetailModalComponent,
-    {
-      tournament: { ...t },
-      isJoined: this.isJoined(t),
-      playerId: pid,
-      proxyUrl: this.sheetApiBaseUrl,
-      width, height, left, top
-    }
-  ) as TournamentDetailResult | undefined;
-
-  if (!res) return;
-
-  // detail 側の「入場」「結果確認」クリック時だけ board を開く
-  if (res.action === 'ENTER' || res.action === 'RESULT') {
-    const tournamentForBoard: any = {
-      ...t,
-      tournamentId: String(t.tournamentId ?? ''),
-      name: String(t.tournamentName ?? t.name ?? ''),
-    };
-
-    const joined = this.isJoined(t) && !!this.member?.playerId;
-    const mode = joined ? 'PLAYER' : 'WATCHER';
-    const entry = joined ? ({ playerId: String(this.member!.playerId) } as any) : undefined;
-
-    await this.modalService.open(
-      TournamentBoardModalComponent,
-      { isOpen: true, tournament: tournamentForBoard, mode, entry }
-    );
-  }
-}
-
-  private async openTournamentBoard_(t: any) {
-    const tournamentForBoard: any = {
-      ...t,
-      tournamentId: String(t.tournamentId ?? ''),
-      name: String(t.tournamentName ?? t.name ?? ''),
-    };
-
-    const joined = this.isJoined(t) && !!this.member?.playerId;
-    const mode = joined ? 'PLAYER' : 'WATCHER';
-    const entry = joined ? ({ playerId: String(this.member!.playerId) } as any) : undefined;
-
-    await this.modalService.open(
-      TournamentBoardModalComponent,
+    const res = await this.modalService.open(
+      RaizanTournamentDetailModalComponent,
       {
-        isOpen: true,
-        tournament: tournamentForBoard,
-        mode,
-        entry,
-
-        // （任意）board 側で詳細も表示したいなら丸ごと渡す
-        tournamentDetail: { ...t },
+        tournament: { ...t },
+        isJoined: this.isJoined(t),
+        playerId: pid,
+        proxyUrl: this.sheetApiBaseUrl,
+        width, height, left, top
       }
-    );
+    ) as TournamentDetailResult | undefined;
+
+    if (!res) return;
+
+    if (res.action === 'ENTER' || res.action === 'RESULT') {
+      this.openTournamentBoard(t);
+    }
   }
 
+  private openTournamentBoard(t: TournamentRow) {
+    const tid = String(t.tournamentId ?? '').trim();
+    const name = String(t.tournamentName ?? '').trim();
+    if (!tid || !name) return;
 
+    // ★Tournament型（必須プロパティを全部埋める）
+    this.boardTournament = {
+      tournamentId: tid,
+      name,
+      status: String(t.status ?? '').trim(),
+      swissMaxRounds: Number(t.swissMaxRound ?? 0),
+      topCut: Number(t.topCut ?? 0),
+      bracketMaxRounds: Number(t.bracketMaxRound ?? 0),
+    } as Tournament;
+
+    const joined = this.isJoined(t) && !!this.member?.playerId;
+    this.boardMode = joined ? 'PLAYER' : 'WATCHER';
+
+    // ★Entry型（必須プロパティを全部埋める）
+    if (joined) {
+      const pid = String(this.member!.playerId).trim();
+      this.boardEntry = {
+        entryId: `E_${tid}_${pid}`,
+        tournamentId: tid,
+        playerId: pid,
+        role: 'PLAYER',
+        active: true,
+      } as Entry;
+    } else {
+      this.boardEntry = undefined;
+    }
+
+    this.isTournamentBoardOpen = true;
+  }
+
+  onTournamentBoardClose() {
+    this.isTournamentBoardOpen = false;
+    this.boardTournament = null;
+    this.boardEntry = undefined;
+    this.boardMode = 'WATCHER';
+  }
+
+  onEnteredTableFromBoard() {
+    // board で入室したら里モーダルは閉じる
+    this.close();
+  }
 
   // ====== 既存 ======
 
