@@ -18,11 +18,12 @@
         </a>
       </li>
 
-      <li (click)="openSheetEditor()" title="ゲーム状況" aria-label="ゲーム状況">
-        <a>
-          <div><i class="fa-solid fa-clipboard"></i></div>
+      <li title="得点ボード" aria-label="得点ボード">
+        <a (click)="open('RaigoScoreBoardComponent')">
+          <div><i class="fa-solid fa-table-list"></i></div>
         </a>
       </li>
+      <!--clipboard-->
 
       <li title="チャット" aria-label="チャット">
         <a (click)="open('ChatWindowComponent')">

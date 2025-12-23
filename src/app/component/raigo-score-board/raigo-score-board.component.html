@@ -1,0 +1,114 @@
+<!-- snapshot$ は購読するだけ（盤面更新に追随） -->
+<ng-container *ngIf="snapshot$ | async as __"></ng-container>
+
+<div class="score-board-root">
+  <div class="score-board">
+    <div class="player-grid">
+
+      <div class="player-card" *ngFor="let p of players; let i = index">
+
+        <div class="player-header">
+
+          <!-- アイコン + P1/P2 -->
+          <div class="icon-column">
+            <div class="peer-icon"
+                 title="アイコン変更"
+                 (click)="changeIcon(i)"
+                 [style.backgroundImage]="getIconUrl(p.iconIdentifier) ? 'url(' + getIconUrl(p.iconIdentifier) + ')' : ''">
+              <div class="peer-icon-fallback" *ngIf="!getIconUrl(p.iconIdentifier)">?</div>
+            </div>
+
+            <!-- ここをクリックしたら自分の情報を代入 -->
+            <div class="player-tag"
+                 (click)="assignSelf(i)">
+              P{{ i + 1 }}
+            </div>
+          </div>
+
+          <div class="player-top">
+            <div class="field">
+              <div class="label">名前</div>
+              <input class="text"
+                     [(ngModel)]="p.name"
+                     placeholder="プレイヤー名"
+                     readonly>
+            </div>
+
+            <div class="field">
+              <div class="label">ID</div>
+              <input class="text"
+                     [(ngModel)]="p.userId"
+                     placeholder="ID"
+                     readonly>
+            </div>
+          </div>
+
+          <div class="player-score">
+            <div class="label">得点</div>
+            <input class="number score" type="number" [(ngModel)]="p.score">
+          </div>
+
+          <div class="player-stats">
+            <div class="kv">
+              <div class="label">雷轟解放</div>
+              <input class="number" type="number" [(ngModel)]="p.raigoReleaseCount">
+            </div>
+
+            <div class="kv">
+              <div class="label">禁忌</div>
+              <input class="number" type="number" [(ngModel)]="p.tabooCount">
+            </div>
+
+            <div class="kv">
+              <div class="label">内駒</div>
+              <input class="number" type="number" [(ngModel)]="p.innerPieceTotal">
+            </div>
+
+            <div class="kv">
+              <div class="label">塔構成</div>
+              <input class="number"
+                     type="number"
+                     [(ngModel)]="p.pieceTotal"
+                     readonly>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="player-body">
+          <div class="towers">
+            <div class="towers-header">
+              <div class="title">完成した塔</div>
+              <div class="meta">（この欄の駒数合計: {{ p.pieceTotal }}）</div>
+              <button class="mini" (click)="addTower(i)">+ 追加</button>
+            </div>
+
+            <div class="tower" *ngFor="let t of p.towers; let ti = index">
+              <div class="tower-head">
+                <div class="label">塔名</div>
+                <input class="text tower-name"
+                       [(ngModel)]="t.towerName"
+                       placeholder="塔の名前"
+                       maxlength="7">
+
+                <div class="label">構成</div>
+                <input class="text tower-pieces"
+                       [(ngModel)]="t.pieceNamesText"
+                       (ngModelChange)="updateTowerComposition(i)"
+                       placeholder="例）雷蛇斬">
+
+                <button class="mini danger tower-delete" (click)="removeTower(i, ti)">削除</button>
+              </div>
+            </div>
+
+            <div class="empty" *ngIf="p.towers.length === 0">
+              まだ塔が登録されていません
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

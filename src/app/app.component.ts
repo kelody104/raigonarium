@@ -50,6 +50,8 @@ import { RaizanSetupService } from 'service/raizan-setup.service';  // ★これ
 import { GameTable } from './class/game-table';
 import { GameTableComponent } from './component/game-table/game-table.component';
 import { RaizanSatoModalComponent, RaizanSatoResult } from 'component/raizan-sato-modal/raizan-sato-modal.component';
+import { RaigoScoreBoardComponent } from 'component/raigo-score-board/raigo-score-board.component';
+
 
 @Component({
   selector: 'app-root',
@@ -439,6 +441,10 @@ export class AppComponent implements AfterViewInit, OnDestroy, OnInit {
       case 'LobbyComponent':
         component = LobbyComponent;
         option = { width: 700, height: 400, left: (window.innerWidth - 700) / 2, top: (window.innerHeight - 400) / 2 };
+        break;
+      case 'RaigoScoreBoardComponent':
+        component = RaigoScoreBoardComponent;
+        option = { width: 980, height: 560, left: 100 };
         break;
     }
     if (component) {
