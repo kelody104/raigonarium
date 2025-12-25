@@ -36,6 +36,7 @@ import { judgeTowerYaku } from 'src/app/raigo/yaku-judge';
 import { ChatMessageService } from 'service/chat-message.service';
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import type { YakuResult } from 'src/app/raigo/yaku-judge';
+import { RaigoScoreBoardStateService } from 'service/raigo-score-board-state.service';
 
 @Component({
   selector: 'card-stack',
@@ -123,7 +124,8 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
     private pointerDeviceService: PointerDeviceService,
     private commonActionService: CommonActionService,
     private spectatorService: SpectatorService,
-    private chatMessageService: ChatMessageService, 
+    private chatMessageService: ChatMessageService,
+    private raigoScoreBoardStateService: RaigoScoreBoardStateService,
   ) { }
 
   // 観戦モードフラグ
@@ -439,8 +441,20 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
 
     if (!gamelog) return;
 
-    const total = (yaku.basePoint ?? 0) + (yaku.bonusPoint ?? 0);
+    const total = Number(yaku.basePoint ?? 0) + Number(yaku.bonusPoint ?? 0);
     const koma = komaNames.length ? komaNames.join('') : '';
+
+    // 得点ボードへ反映（P1/P2に割り当て済みの名前と一致する場合のみ）
+    try {
+      this.raigoScoreBoardStateService.applyTowerReleaseByPlayerName(
+        playerName,
+        yaku?.yakuName ?? '',
+        koma,
+        total
+      );
+    } catch (e) {
+      console.warn('[postTowerReleaseChat_] score board update failed:', e);
+    }
 
     const text = `${playerName} は、塔【${koma}】を解放した。\n役名：${yaku.yakuName}　得点：${total}`;
 

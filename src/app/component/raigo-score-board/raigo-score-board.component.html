@@ -29,7 +29,7 @@
             <div class="field">
               <div class="label">名前</div>
               <input class="text"
-                     [(ngModel)]="p.name"
+                     [ngModel]="p.name"
                      placeholder="プレイヤー名"
                      readonly>
             </div>
@@ -37,7 +37,7 @@
             <div class="field">
               <div class="label">ID</div>
               <input class="text"
-                     [(ngModel)]="p.userId"
+                     [ngModel]="p.userId"
                      placeholder="ID"
                      readonly>
             </div>
@@ -45,30 +45,42 @@
 
           <div class="player-score">
             <div class="label">得点</div>
-            <input class="number score" type="number" [(ngModel)]="p.score">
+            <input class="number score"
+                   type="number"
+                   [ngModel]="p.score"
+                   (ngModelChange)="onScoreChange(i, $event)">
           </div>
 
           <div class="player-stats">
             <div class="kv">
               <div class="label">雷轟解放</div>
-              <input class="number" type="number" [(ngModel)]="p.raigoReleaseCount">
+              <input class="number"
+                     type="number"
+                     [ngModel]="p.raigoReleaseCount"
+                     (ngModelChange)="p.raigoReleaseCount = $event; onCountsChange(i)">
             </div>
 
             <div class="kv">
               <div class="label">禁忌</div>
-              <input class="number" type="number" [(ngModel)]="p.tabooCount">
+              <input class="number"
+                     type="number"
+                     [ngModel]="p.tabooCount"
+                     (ngModelChange)="p.tabooCount = $event; onCountsChange(i)">
             </div>
 
             <div class="kv">
               <div class="label">内駒</div>
-              <input class="number" type="number" [(ngModel)]="p.innerPieceTotal">
+              <input class="number"
+                     type="number"
+                     [ngModel]="p.innerPieceTotal"
+                     (ngModelChange)="p.innerPieceTotal = $event; onCountsChange(i)">
             </div>
 
             <div class="kv">
               <div class="label">塔構成</div>
               <input class="number"
                      type="number"
-                     [(ngModel)]="p.pieceTotal"
+                     [ngModel]="p.pieceTotal"
                      readonly>
             </div>
           </div>
@@ -79,22 +91,28 @@
           <div class="towers">
             <div class="towers-header">
               <div class="title">完成した塔</div>
-              <div class="meta">（この欄の駒数合計: {{ p.pieceTotal }}）</div>
+
+              <!-- ★削除：文言だけ消す（レイアウト維持のため空要素は残す） -->
+              <div class="meta">&nbsp;</div>
+
               <button class="mini" (click)="addTower(i)">+ 追加</button>
             </div>
 
             <div class="tower" *ngFor="let t of p.towers; let ti = index">
               <div class="tower-head">
                 <div class="label">塔名</div>
+                <!-- ★二重バインド回避：確実に代入→更新 -->
                 <input class="text tower-name"
-                       [(ngModel)]="t.towerName"
+                       [ngModel]="t.towerName"
+                       (ngModelChange)="t.towerName = $event; updateTowerComposition(i)"
                        placeholder="塔の名前"
                        maxlength="7">
 
                 <div class="label">構成</div>
+                <!-- ★二重バインド回避：確実に代入→更新（構成文字数が塔構成に反映） -->
                 <input class="text tower-pieces"
-                       [(ngModel)]="t.pieceNamesText"
-                       (ngModelChange)="updateTowerComposition(i)"
+                       [ngModel]="t.pieceNamesText"
+                       (ngModelChange)="t.pieceNamesText = $event; updateTowerComposition(i)"
                        placeholder="例）雷蛇斬">
 
                 <button class="mini danger tower-delete" (click)="removeTower(i, ti)">削除</button>

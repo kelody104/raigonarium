@@ -7,38 +7,11 @@ import { PeerCursor } from '@udonarium/peer-cursor';
 import { ModalService } from 'service/modal.service';
 import { PanelService } from 'service/panel.service';
 import { ViewStateService } from 'service/view-state.service';
-
 import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
 
-interface TowerRecord {
-  towerName: string;
-  pieceNamesText: string; // 区切りなし。文字数＝駒数（空白/改行は除外）
-}
+import { RaigoScoreBoardStateService, RaigoPlayerScoreRecord } from 'service/raigo-score-board-state.service';
 
-interface PlayerScoreRecord {
-  iconIdentifier: string;
-  name: string;   // 手動入力不可（表示のみ）
-  userId: string; // 手動入力不可（表示のみ）
-
-  score: number;
-
-  towers: TowerRecord[];
-
-  // 「塔構成」：完成した塔の構成文字列の合計駒数（＝この欄の駒数合計）
-  pieceTotal: number;
-
-  // 現状は手動入力のまま（将来自動算出も可）
-  innerPieceTotal: number;
-
-  raigoReleaseCount: number;
-  tabooCount: number;
-
-  // --- 内部管理（UIに出さない） ---
-  /** 前回反映した雷轟解放回数（差分加算用） */
-  __lastRaigoReleaseCount?: number;
-  /** 前回反映した禁忌回数（差分加算用） */
-  __lastTabooCount?: number;
-}
+type PlayerIndex = 0 | 1;
 
 @Component({
   selector: 'raigo-score-board',
@@ -46,85 +19,60 @@ interface PlayerScoreRecord {
   styleUrls: ['./raigo-score-board.component.css']
 })
 export class RaigoScoreBoardComponent implements OnInit, DoCheck {
+  get snapshot$() {
+    return this.viewState.snapshot$;
+  }
 
-  get snapshot$() { return this.viewState.snapshot$; }
-
-  players: [PlayerScoreRecord, PlayerScoreRecord] = [
-    this.createEmptyPlayer(),
-    this.createEmptyPlayer()
-  ];
+  get players() {
+    return this.raigoState.players;
+  }
 
   constructor(
     private modalService: ModalService,
     private panelService: PanelService,
-    private viewState: ViewStateService
+    private viewState: ViewStateService,
+    private raigoState: RaigoScoreBoardStateService
   ) { }
 
   ngOnInit() {
-    Promise.resolve().then(() => this.panelService.title = '得点ボード');
-    this.updateTowerComposition(0);
-    this.updateTowerComposition(1);
+    Promise.resolve().then(() => (this.panelService.title = '得点ボード'));
+    this.raigoState.ensureInitialized();
+
+    // 初回表示時も一応整合（既存データがあっても塔構成を確実に合わせる）
+    this.recalcPieceTotal(0);
+    this.recalcPieceTotal(1);
+    this.raigoState.flush();
   }
 
   ngDoCheck(): void {
-    this.applyScoreAutoAdjust(0);
-    this.applyScoreAutoAdjust(1);
+    this.raigoState.pull();
+    this.raigoState.flush();
   }
 
-  private createEmptyPlayer(): PlayerScoreRecord {
-    return {
-      iconIdentifier: '',
-      name: '',
-      userId: '',
-      // 既定得点
-      score: 2,
-      towers: [],
-      pieceTotal: 0,
-      innerPieceTotal: 0,
-      raigoReleaseCount: 0,
-      tabooCount: 0,
-      __lastRaigoReleaseCount: 0,
-      __lastTabooCount: 0
-    };
+  private isValidPlayerIndex(i: number): i is PlayerIndex {
+    return i === 0 || i === 1;
   }
 
-  private toNumber(value: any): number {
-    const n = Number(value);
+  private toNumber(v: any): number {
+    const n = Number(v);
     return Number.isFinite(n) ? n : 0;
   }
 
-  /**
-   * 雷轟解放回数×2、禁忌×(-1) を「得点」に差分で自動加算する。
-   * - 得点欄はユーザーが直接編集できる前提のまま維持
-   * - 雷轟解放/禁忌の変更分だけを加減算するので、何度も再計算で上書きしない
-   */
-  private applyScoreAutoAdjust(playerIndex: number): void {
-    if (!this.isValidPlayerIndex(playerIndex)) return;
-
-    const p = this.players[playerIndex];
-
-    const nowRelease = this.toNumber(p.raigoReleaseCount);
-    const nowTaboo = this.toNumber(p.tabooCount);
-
-    const lastRelease = this.toNumber(p.__lastRaigoReleaseCount);
-    const lastTaboo = this.toNumber(p.__lastTabooCount);
-
-    if (nowRelease === lastRelease && nowTaboo === lastTaboo) return;
-
-    const deltaRelease = (nowRelease - lastRelease) * 2;
-    const deltaTaboo = (nowTaboo - lastTaboo) * (-1);
-    const delta = deltaRelease + deltaTaboo;
-
-    if (delta !== 0) {
-      p.score = this.toNumber(p.score) + delta;
-    }
-
-    p.__lastRaigoReleaseCount = nowRelease;
-    p.__lastTabooCount = nowTaboo;
+  private calcAdj(raigoReleaseCount: any, tabooCount: any): number {
+    const r = this.toNumber(raigoReleaseCount);
+    const t = this.toNumber(tabooCount);
+    return r * 2 - t;
   }
 
-  private isValidPlayerIndex(i: number): i is 0 | 1 {
-    return i === 0 || i === 1;
+  private countPiecesText(text: string): number {
+    // 半角/全角スペースや改行はカウントしない
+    const s = (text ?? '').replace(/[\s　]/g, '');
+    return s.length;
+  }
+
+  private recalcPieceTotal(playerIndex: PlayerIndex): void {
+    const p = this.players[playerIndex];
+    p.pieceTotal = (p.towers ?? []).reduce((sum, t) => sum + this.countPiecesText(t?.pieceNamesText ?? ''), 0);
   }
 
   getIconUrl(iconIdentifier: string): string {
@@ -133,50 +81,59 @@ export class RaigoScoreBoardComponent implements OnInit, DoCheck {
     return image?.url ?? '';
   }
 
-  /**
-   * P1/P2押下時にリセットする対象のみ初期値へ戻す
-   * （アイコン/名前/IDは押下後に自分の情報を代入するため、ここでは触らない）
-   */
-  private resetPlayerGameplayFields(p: PlayerScoreRecord): void {
-    // 指定の項目を初期化
-    p.raigoReleaseCount = 0;
-    p.tabooCount = 0;
-    p.innerPieceTotal = 0;
+  onScoreChange(playerIndex: number, value: any): void {
+    if (!this.isValidPlayerIndex(playerIndex)) return;
 
-    // 完成した塔
-    p.towers = [];
+    const idx = playerIndex as PlayerIndex;
+    const p = this.players[idx];
 
-    // 塔構成
-    p.pieceTotal = 0;
+    const score = this.toNumber(value);
+    const adj = this.calcAdj(p.raigoReleaseCount, p.tabooCount);
 
-    // 得点（デフォルト2）
-    p.score = 2;
+    p.scoreBase = score - adj;
+    p.score = score;
 
-    // 差分加算の内部状態も初期化（これをしないと次回入力でズレる）
-    p.__lastRaigoReleaseCount = 0;
-    p.__lastTabooCount = 0;
+    this.raigoState.flush();
   }
 
-  /**
-   * P1/P2クリックで
-   * 1) 指定項目を初期値へ戻す
-   * 2) 「自分の」アイコン・名前・IDを代入
-   */
+  onCountsChange(playerIndex: number): void {
+    if (!this.isValidPlayerIndex(playerIndex)) return;
+
+    const idx = playerIndex as PlayerIndex;
+    const p = this.players[idx];
+
+    const adj = this.calcAdj(p.raigoReleaseCount, p.tabooCount);
+    p.scoreBase = this.toNumber(p.scoreBase);
+    p.score = p.scoreBase + adj;
+
+    this.raigoState.flush();
+  }
+
   assignSelf(playerIndex: number): void {
     if (!this.isValidPlayerIndex(playerIndex)) return;
 
-    const p = this.players[playerIndex];
+    const idx = playerIndex as PlayerIndex;
 
-    // まずリセット
-    this.resetPlayerGameplayFields(p);
+    this.raigoState.pull();
+    this.raigoState.resetGameplay(idx, false);
 
-    // 自分の情報を代入
     const cursor = PeerCursor.myCursor ?? PeerCursor.findByPeerId(Network.peerId);
     if (!cursor) return;
 
-    p.iconIdentifier = cursor.imageIdentifier ?? '';
-    p.name = cursor.name ?? '';
-    p.userId = (cursor.userId ?? cursor.peerId ?? '');
+    const icon = cursor.imageIdentifier ?? '';
+    const name = cursor.name ?? '';
+    const userId = (cursor.userId ?? cursor.peerId ?? '');
+
+    this.raigoState.setIdentity(idx, icon, name, userId, false);
+
+    // 名札（rank 初期0）
+    this.raigoState.upsertNameplate(idx, name, '', 0);
+
+    // 初期化直後も整合
+    this.recalcPieceTotal(idx);
+    this.onCountsChange(idx); // score反映も合わせる
+
+    this.raigoState.flush();
   }
 
   async changeIcon(playerIndex: number) {
@@ -185,38 +142,51 @@ export class RaigoScoreBoardComponent implements OnInit, DoCheck {
     const value = await this.modalService.open<string>(FileSelecterComponent);
     if (!value) return;
 
+    this.raigoState.pull();
     this.players[playerIndex].iconIdentifier = value;
+    this.raigoState.flush();
   }
 
   addTower(playerIndex: number) {
     if (!this.isValidPlayerIndex(playerIndex)) return;
-    this.players[playerIndex].towers.push({ towerName: '', pieceNamesText: '' });
-    this.updateTowerComposition(playerIndex);
+
+    const idx = playerIndex as PlayerIndex;
+
+    this.raigoState.pull();
+    this.players[idx].towers.push({ towerName: '', pieceNamesText: '' });
+
+    // ★塔更新のたびに塔構成を再計算
+    this.recalcPieceTotal(idx);
+
+    this.raigoState.flush();
   }
 
   removeTower(playerIndex: number, towerIndex: number) {
     if (!this.isValidPlayerIndex(playerIndex)) return;
-    this.players[playerIndex].towers.splice(towerIndex, 1);
-    this.updateTowerComposition(playerIndex);
+
+    const idx = playerIndex as PlayerIndex;
+
+    this.raigoState.pull();
+    this.players[idx].towers.splice(towerIndex, 1);
+
+    // ★塔更新のたびに塔構成を再計算
+    this.recalcPieceTotal(idx);
+
+    this.raigoState.flush();
   }
 
   /**
-   * 構成は「区切り無し」：文字数が駒数
-   * ただし空白・改行・タブ等は除外して数える。
+   * 塔情報（塔名/構成）の変更時に呼ばれる
+   * ★塔の情報が更新される度に塔構成を変動
    */
-  countPieces(pieceNamesText: string): number {
-    const s = (pieceNamesText ?? '').replace(/\s/g, '');
-    return s.length;
-  }
-
-  towersPieceCount(playerIndex: number): number {
-    if (!this.isValidPlayerIndex(playerIndex)) return 0;
-    return this.players[playerIndex].towers.reduce((sum, t) => sum + this.countPieces(t.pieceNamesText), 0);
-  }
-
-  /** 「この欄の駒数合計」→「塔構成(pieceTotal)」へ反映 */
   updateTowerComposition(playerIndex: number) {
     if (!this.isValidPlayerIndex(playerIndex)) return;
-    this.players[playerIndex].pieceTotal = this.towersPieceCount(playerIndex);
+
+    const idx = playerIndex as PlayerIndex;
+
+    // ★ここで確実に塔構成を再計算してUIへ即反映
+    this.recalcPieceTotal(idx);
+
+    this.raigoState.flush();
   }
 }
